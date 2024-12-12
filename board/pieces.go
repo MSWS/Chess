@@ -16,6 +16,10 @@ const (
 	King
 )
 
+func (piece Piece) GetLegalMoves(board Board) []Move {
+	return []Move{}
+}
+
 func GetPiece(c rune) (Piece, error) {
 	white := true
 	if c > 'Z' {

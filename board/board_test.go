@@ -162,11 +162,9 @@ func TestGetAlgebra(t *testing.T) {
 func TestFromFEN(t *testing.T) {
 	startRow := [8]Piece{Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook}
 	t.Run("Start Position", func(t *testing.T) {
-		startPos := "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-
 		startBoard := getStartGame()
 
-		resultBoard, err := FromFEN(startPos)
+		resultBoard, err := FromFEN(START_POSITION)
 
 		if err != nil {
 			t.Errorf("encountered error when parsing from fen: %v", err)
@@ -224,7 +222,7 @@ func TestToFEN(t *testing.T) {
 	}{
 		"Start Position": {
 			input:    getStartGame(),
-			expected: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+			expected: START_POSITION,
 		},
 	}
 

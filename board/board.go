@@ -54,6 +54,22 @@ func (board Board) Move(from Coordinate, to Coordinate) {
 	board.Board[toX][toY] = board.Board[fromX][fromY]
 }
 
+func (board Board) MakeMove(move Move) Move {
+	result := move
+	captured := board.Get(move.to)
+	if captured != 0 {
+		result.capture = captured
+	}
+	board.Move(move.from, move.to)
+	return result
+}
+
+func (board Board) MakePromotion(move Move, to Piece) Move {
+	result := board.MakeMove(move)
+	result.promotionTo = to
+	return result
+}
+
 // A board that represents a given game.
 // Represents all data that is stored in a FEN string.
 // i.e. given a Board, you can find the FEN, and vice-versa
