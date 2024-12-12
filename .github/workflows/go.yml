@@ -1,0 +1,46 @@
+name: Go Build and Test
+
+on:
+  push:
+    paths:
+      - "**/*.go"
+      - ".github/workflows/build.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go-build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go environment
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22.8' # Replace with your required Go version
+
+      - name: Find and process directories with go.mod
+        run: |
+          # Find all directories with go.mod in the immediate subdirectories
+          for dir in $(find . -name "go.mod" -exec dirname {} \;); do
+            echo "Processing $dir"
+            cd "$dir"
+            
+            # Run go build
+            echo "Running go build in $dir"
+            go build
+
+            # Check if _test.go files exist
+            if ls *_test.go >/dev/null 2>&1; then
+              echo "Running go test in $dir"
+              go test -v -cover
+            else
+              echo "No test files in $dir"
+            fi
+
+            cd - >/dev/null
+          done

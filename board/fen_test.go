@@ -3,32 +3,21 @@ package board
 import "testing"
 
 func TestGenerateBoard(t *testing.T) {
-	startRow := [8]Piece{Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook}
-	pawnRow := [8]Piece{Pawn, Pawn, Pawn, Pawn, Pawn, Pawn, Pawn, Pawn}
-
-	board := [8][8]Piece{
-		startRow, // White starting row
-		pawnRow,  // White pawn row
-		{},
-		{},
-		{},
-		{},
-		pawnRow,  // Black pawn row
-		startRow, // Black starting row
-	}
-
-	markRowColor(&board[0], White)
-	markRowColor(&board[1], White)
-	markRowColor(&board[6], Black)
-	markRowColor(&board[7], Black)
-
 	tests := map[string]struct {
 		input  string
 		result [8][8]Piece
 	}{
 		"Starting": {
 			input:  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
-			result: board,
+			result: *getStartBoard(),
+		},
+		"Empty Board": {
+			input:  "8/8/8/8/8/8/8/8",
+			result: [8][8]Piece{},
+		},
+		"Test Board": {
+			input:  getTestPieceString(),
+			result: *getTestBoard(),
 		},
 	}
 
@@ -50,7 +39,6 @@ func TestGenerateBoard(t *testing.T) {
 }
 
 func TestGenerateRow(t *testing.T) {
-	startRow := [8]Piece{Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook}
 	tests := map[string]struct {
 		input  string
 		result [8]Piece
@@ -65,7 +53,7 @@ func TestGenerateRow(t *testing.T) {
 		},
 		"Starting Row": {
 			input:  "RNBQKBNR",
-			result: startRow,
+			result: getStartRow(),
 		},
 		"Rooks Only": {
 			input:  "r6R",
@@ -85,7 +73,7 @@ func TestGenerateRow(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 
-			result, err := GenerateRow(test.input)
+			result, err := generateBoardRow(test.input)
 
 			if err != nil {
 				t.Errorf("unexpected error: %v", err)
@@ -99,35 +87,79 @@ func TestGenerateRow(t *testing.T) {
 	}
 }
 
-func TestGetPiece(t *testing.T) {
-	tests := []struct {
-		input  rune
-		result Piece
-	}{
-		{input: 'K', result: King | White},
-		{input: 'Q', result: Queen | White},
-		{input: 'R', result: Rook | White},
-		{input: 'B', result: Bishop | White},
-		{input: 'N', result: Knight | White},
-		{input: 'P', result: Pawn | White},
-		{input: 'k', result: King | Black},
-		{input: 'q', result: Queen | Black},
-		{input: 'r', result: Rook | Black},
-		{input: 'b', result: Bishop | Black},
-		{input: 'n', result: Knight | Black},
-		{input: 'p', result: Pawn | Black},
+func getStartRow() [8]Piece {
+	return [8]Piece{Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook}
+}
+
+func getStartBoard() *[8][8]Piece {
+	pawnRow := [8]Piece{Pawn, Pawn, Pawn, Pawn, Pawn, Pawn, Pawn, Pawn}
+
+	board := [8][8]Piece{
+		getStartRow(), // White starting row
+		pawnRow,       // White pawn row
+		{},
+		{},
+		{},
+		{},
+		pawnRow,       // Black pawn row
+		getStartRow(), // Black starting row
 	}
 
-	for _, test := range tests {
-		t.Run(string(test.input), func(t *testing.T) {
-			result, err := GetPiece(test.input)
+	markRowColor(&board[0], White)
+	markRowColor(&board[1], White)
+	markRowColor(&board[6], Black)
+	markRowColor(&board[7], Black)
 
-			if err != nil {
-				t.Errorf("encountered unexpected error: %v", err)
-			}
+	return &board
+}
 
-			if result != test.result {
-				t.Errorf("expected %x, got %x", test.result, result)
+func getTestBoard() *[8][8]Piece {
+	board := [8][8]Piece{
+		{0, 0, Pawn | White, 0, 0, 0, Knight | White},
+		{0, Pawn | Black, 0, 0, 0, Bishop | Black},
+		{Bishop | White, 0, 0, 0, Rook | Black},
+		{0, 0, 0, Queen | White, 0, 0, 0, Queen | Black},
+		{Pawn | Black, Pawn | Black, Pawn | Black},
+		{Pawn | Black, Pawn | Black},
+		{Pawn | Black},
+		{0, 0, 0, 0, 0, 0, 0, King | Black},
+	}
+
+	return &board
+}
+
+func getTestPieceString() string {
+	return "7k/p7/pp6/ppp5/3Q3q/B3r3/1p3b2/2P3N1"
+}
+
+func TestGeneratePieceString(t *testing.T) {
+	tests := map[string]struct {
+		input    [8][8]Piece
+		expected string
+	}{
+		"Starting": {
+			input:    *getStartBoard(),
+			expected: "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+		},
+		"Empty Board": {
+			input:    [8][8]Piece{},
+			expected: "8/8/8/8/8/8/8/8",
+		},
+		"Test Board": {
+			input:    *getTestBoard(),
+			expected: getTestPieceString(),
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			t.Parallel()
+
+			result := GeneratePieceString(test.input)
+
+			if test.expected != result {
+				t.Errorf("got invalid board, expected %s, got %s",
+					test.expected, result)
 			}
 		})
 	}

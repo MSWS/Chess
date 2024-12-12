@@ -6,6 +6,41 @@ import (
 	"strings"
 )
 
+func GeneratePieceString(arr [8][8]Piece) string {
+	var sb strings.Builder
+	for row := len(arr) - 1; row >= 0; row-- {
+		sb.WriteString(generatePieceRow(arr[row]))
+		if row > 0 {
+			sb.WriteRune('/')
+		}
+	}
+
+	return sb.String()
+}
+
+func generatePieceRow(row [8]Piece) string {
+	var sb strings.Builder
+	empty := 0
+	for _, piece := range row {
+		if piece != 0 {
+			if empty > 0 {
+				sb.WriteRune(rune('0' + empty))
+			}
+			empty = 0
+			sb.WriteRune(piece.GetRune())
+			continue
+		}
+
+		empty++
+	}
+
+	if empty != 0 {
+		sb.WriteRune(rune('0' + empty))
+	}
+
+	return sb.String()
+}
+
 func GenerateBoard(str string) (*[8][8]Piece, error) {
 	board := &[8][8]Piece{}
 	ranks := strings.Split(str, "/")
@@ -15,7 +50,7 @@ func GenerateBoard(str string) (*[8][8]Piece, error) {
 	}
 
 	for rank, row := range ranks {
-		result, err := GenerateRow(row)
+		result, err := generateBoardRow(row)
 
 		if err != nil {
 			return board, err
@@ -27,7 +62,7 @@ func GenerateBoard(str string) (*[8][8]Piece, error) {
 	return board, nil
 }
 
-func GenerateRow(str string) (*[8]Piece, error) {
+func generateBoardRow(str string) (*[8]Piece, error) {
 	row := &[8]Piece{}
 	if len(str) == 0 {
 		return row, nil
@@ -56,37 +91,4 @@ func GenerateRow(str string) (*[8]Piece, error) {
 	}
 
 	return row, nil
-}
-
-func GetPiece(c rune) (Piece, error) {
-	white := true
-	if c > 'Z' {
-		white = false
-		c = 'A' + (c - 'a')
-	}
-	var result Piece
-	switch c {
-	case 'P':
-		result = Pawn
-	case 'N':
-		result = Knight
-	case 'B':
-		result = Bishop
-	case 'R':
-		result = Rook
-	case 'Q':
-		result = Queen
-	case 'K':
-		result = King
-	}
-
-	if result == 0 {
-		return 0, fmt.Errorf("unknown piece type: %c (%d)", c, c)
-	}
-
-	if !white {
-		result |= Black
-	}
-
-	return result, nil
 }

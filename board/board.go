@@ -26,6 +26,18 @@ func CreateCoordByte(x byte, y byte) Coordinate {
 	return Coordinate(x<<4 + y)
 }
 
+func CreateCoordAlgebra(alg string) Coordinate {
+	x := alg[0] - 'a'
+	y := alg[1] - '1'
+
+	return CreateCoordByte(x, y)
+}
+
+func (coord Coordinate) GetAlgebra() string {
+	x, y := coord.GetCoords()
+	return fmt.Sprintf("%c%c", x+'a', y+'1')
+}
+
 type Castlability struct {
 	CanQueenSide bool
 	CanKingSide  bool
@@ -61,6 +73,14 @@ type Board struct {
 	FullMoves     int
 }
 
+func (board Board) Equal(other Board) bool {
+	return board.ToFEN() == other.ToFEN()
+}
+
+func (board Board) String() string {
+	return fmt.Sprintf("Board{%s}", board.ToFEN())
+}
+
 func FromFEN(str string) (*Board, error) {
 	result := Board{}
 
@@ -90,6 +110,11 @@ func FromFEN(str string) (*Board, error) {
 	result.WhiteCastling = getCastlability(records[2], White)
 	result.BlackCastling = getCastlability(records[2], Black)
 
+	if records[3][0] != '-' {
+		coords := CreateCoordAlgebra(records[3])
+		result.EnPassant = &coords
+	}
+
 	halfMoves, err := strconv.Atoi(records[4])
 
 	if err != nil {
@@ -107,6 +132,56 @@ func FromFEN(str string) (*Board, error) {
 	result.FullMoves = fullMoves
 
 	return &result, nil
+}
+
+func (board Board) ToFEN() string {
+	var result strings.Builder
+	result.WriteString(GeneratePieceString(*board.Board))
+	result.WriteRune(' ')
+	if board.Active == White {
+		result.WriteRune('w')
+	} else {
+		result.WriteRune('b')
+	}
+
+	result.WriteRune(' ')
+	oldLen := result.Len()
+
+	if board.WhiteCastling.CanKingSide {
+		result.WriteRune('K')
+	}
+
+	if board.WhiteCastling.CanQueenSide {
+		result.WriteRune('Q')
+	}
+
+	if board.BlackCastling.CanKingSide {
+		result.WriteRune('k')
+	}
+
+	if board.BlackCastling.CanQueenSide {
+		result.WriteRune('q')
+	}
+
+	if oldLen == result.Len() {
+		result.WriteRune('-')
+	}
+
+	result.WriteRune(' ')
+
+	if board.EnPassant == nil {
+		result.WriteRune('-')
+	} else {
+		result.WriteString(board.EnPassant.GetAlgebra())
+	}
+
+	result.WriteRune(' ')
+	result.WriteString(fmt.Sprint(board.HalfMoves))
+
+	result.WriteRune(' ')
+	result.WriteString(fmt.Sprint(board.FullMoves))
+
+	return result.String()
 }
 
 func getCastlability(str string, color Piece) Castlability {
