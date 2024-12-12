@@ -99,6 +99,12 @@ func TestFromFEN(t *testing.T) {
 			pawnRow,  // Black pawn row
 			startRow, // Black starting row
 		},
+		Active:        White,
+		WhiteCastling: Castlability{CanQueenSide: true, CanKingSide: true},
+		BlackCastling: Castlability{CanQueenSide: true, CanKingSide: true},
+		EnPassant:     nil,
+		HalfMoves:     0,
+		FullMoves:     0,
 	}
 
 	markRowColor(&startBoard.Board[0], White)

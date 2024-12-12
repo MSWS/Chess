@@ -36,7 +36,7 @@ func GenerateRow(str string) (*[8]Piece, error) {
 	column := 0
 
 	for _, c := range str {
-		if column > len(row) {
+		if column >= len(row) {
 			return row, errors.New("out of bounds column")
 		}
 

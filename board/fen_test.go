@@ -50,6 +50,7 @@ func TestGenerateBoard(t *testing.T) {
 }
 
 func TestGenerateRow(t *testing.T) {
+	startRow := [8]Piece{Rook, Knight, Bishop, Queen, King, Bishop, Knight, Rook}
 	tests := map[string]struct {
 		input  string
 		result [8]Piece
@@ -61,6 +62,22 @@ func TestGenerateRow(t *testing.T) {
 		"All Pawns": {
 			input:  "pppppppp",
 			result: [8]Piece{Pawn | Black, Pawn | Black, Pawn | Black, Pawn | Black, Pawn | Black, Pawn | Black, Pawn | Black, Pawn | Black},
+		},
+		"Starting Row": {
+			input:  "RNBQKBNR",
+			result: startRow,
+		},
+		"Rooks Only": {
+			input:  "r6R",
+			result: [8]Piece{Rook | Black, 0, 0, 0, 0, 0, 0, Rook | White},
+		},
+		"Alternating Pawns": {
+			input:  "pP1Pp2P",
+			result: [8]Piece{Pawn | Black, Pawn | White, 0, Pawn | White, Pawn | Black, 0, 0, Pawn | White},
+		},
+		"Many Kings": {
+			input:  "KKKKkkkk",
+			result: [8]Piece{King | White, King | White, King | White, King | White, King | Black, King | Black, King | Black, King | Black},
 		},
 	}
 

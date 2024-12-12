@@ -2,6 +2,7 @@ package board
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 )
 
@@ -29,6 +30,17 @@ type Castlability struct {
 	CanKingSide  bool
 }
 
+func (board Board) Get(coord Coordinate) Piece {
+	x, y := coord.GetCoords()
+	return board.Board[x][y]
+}
+
+func (board Board) Move(from Coordinate, to Coordinate) {
+	fromX, fromY := from.GetCoords()
+	toX, toY := to.GetCoords()
+	board.Board[toX][toY] = board.Board[fromX][fromY]
+}
+
 // A board that represents a given game.
 // Represents all data that is stored in a FEN string.
 // i.e. given a Board, you can find the FEN, and vice-versa
@@ -36,11 +48,14 @@ type Board struct {
 	// The game's pieces, in [row][col]
 	// with the first row, first column being the bottom
 	// left of the board from white's perspective (i.e. a1)
-	Board         *[8][8]Piece
-	Active        Piece
+	Board *[8][8]Piece
+
+	// Active player's turn
+	Active Piece
+
 	WhiteCastling Castlability
 	BlackCastling Castlability
-	EnPassant     Coordinate
+	EnPassant     *Coordinate
 	HalfMoves     int
 	FullMoves     int
 }
@@ -61,5 +76,34 @@ func FromFEN(str string) (*Board, error) {
 	}
 
 	result.Board = board
+
+	switch records[1][0] {
+	case 'w':
+		result.Active = White
+	case 'b':
+		result.Active = Black
+	default:
+		return &result, fmt.Errorf("invalid active color %c", records[1][0])
+	}
+
+	result.WhiteCastling = getCastlability(records[2], White)
+	result.BlackCastling = getCastlability(records[2], Black)
+
 	return &result, nil
+}
+
+func getCastlability(str string, color Piece) Castlability {
+	if color == White {
+		return Castlability{
+			CanQueenSide: strings.Contains(str, "Q"),
+			CanKingSide:  strings.Contains(str, "K"),
+		}
+	} else if color == Black {
+		return Castlability{
+			CanQueenSide: strings.Contains(str, "q"),
+			CanKingSide:  strings.Contains(str, "k"),
+		}
+	}
+
+	return Castlability{}
 }
