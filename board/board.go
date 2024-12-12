@@ -3,6 +3,7 @@ package board
 import (
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -88,6 +89,22 @@ func FromFEN(str string) (*Board, error) {
 
 	result.WhiteCastling = getCastlability(records[2], White)
 	result.BlackCastling = getCastlability(records[2], Black)
+
+	halfMoves, err := strconv.Atoi(records[4])
+
+	if err != nil {
+		return &result, err
+	}
+
+	result.HalfMoves = halfMoves
+
+	fullMoves, err := strconv.Atoi(records[5])
+
+	if err != nil {
+		return &result, err
+	}
+
+	result.FullMoves = fullMoves
 
 	return &result, nil
 }
