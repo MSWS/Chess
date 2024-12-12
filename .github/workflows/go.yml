@@ -25,14 +25,11 @@ jobs:
 
       - name: Find and process directories with go.mod
         run: |
+          go build
           # Find all directories with go.mod in the immediate subdirectories
-          for dir in $(find . -name "go.mod" -exec dirname {} \;); do
+          for dir in */; do
             echo "Processing $dir"
             cd "$dir"
-            
-            # Run go build
-            echo "Running go build in $dir"
-            go build
 
             # Check if _test.go files exist
             if ls *_test.go >/dev/null 2>&1; then
