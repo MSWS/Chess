@@ -45,29 +45,35 @@ type Castlability struct {
 
 func (board Board) Get(coord Coordinate) Piece {
 	x, y := coord.GetCoords()
-	return board.Board[x][y]
+	return board.Board[y][x]
+}
+
+func (board Board) GetStr(coord string) Piece {
+	return board.Get(CreateCoordAlgebra(coord))
+}
+
+func (board Board) Set(coord Coordinate, piece Piece) {
+	x, y := coord.GetCoords()
+	board.Board[y][x] = piece
 }
 
 func (board Board) Move(from Coordinate, to Coordinate) {
 	fromX, fromY := from.GetCoords()
 	toX, toY := to.GetCoords()
-	board.Board[toX][toY] = board.Board[fromX][fromY]
+	board.Board[toY][toX] = board.Board[fromY][fromX]
+	board.Board[fromY][fromX] = 0
 }
 
 func (board Board) MakeMove(move Move) Move {
-	result := move
 	captured := board.Get(move.to)
 	if captured != 0 {
-		result.capture = captured
+		move.capture = captured
 	}
 	board.Move(move.from, move.to)
-	return result
-}
-
-func (board Board) MakePromotion(move Move, to Piece) Move {
-	result := board.MakeMove(move)
-	result.promotionTo = to
-	return result
+	if move.promotionTo != 0 {
+		board.Set(move.to, move.promotionTo)
+	}
+	return move
 }
 
 // A board that represents a given game.
@@ -89,12 +95,32 @@ type Board struct {
 	FullMoves     int
 }
 
+type Bitboard uint64
+
 func (board Board) Equal(other Board) bool {
 	return board.ToFEN() == other.ToFEN()
 }
 
 func (board Board) String() string {
 	return fmt.Sprintf("Board{%s}", board.ToFEN())
+}
+
+func (board Board) PrettySPrint() string {
+	var builder strings.Builder
+
+	for row := 0; row < len(board.Board); row++ {
+		for col := 0; col < len(board.Board[row]); col++ {
+			piece := board.Board[row][col]
+			if piece == 0 {
+				builder.WriteRune('0')
+			} else {
+				builder.WriteRune(rune(board.Board[row][col].GetRune()))
+			}
+		}
+		builder.WriteRune('\n')
+	}
+
+	return builder.String()
 }
 
 func FromFEN(str string) (*Board, error) {

@@ -16,10 +16,6 @@ const (
 	King
 )
 
-func (piece Piece) GetLegalMoves(board Board) []Move {
-	return []Move{}
-}
-
 func GetPiece(c rune) (Piece, error) {
 	white := true
 	if c > 'Z' {
@@ -53,9 +49,17 @@ func GetPiece(c rune) (Piece, error) {
 	return result, nil
 }
 
+func (piece Piece) GetColor() Piece {
+	return piece & (White | Black)
+}
+
+func (piece Piece) GetType() Piece {
+	return piece & ^(White | Black)
+}
+
 func (piece Piece) GetRune() rune {
-	color := piece & (White | Black)
-	p := piece & ^(White | Black)
+	color := piece.GetColor()
+	p := piece.GetType()
 
 	var result rune
 	switch p {

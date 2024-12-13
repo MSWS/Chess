@@ -6,8 +6,29 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+func TestMakeMove(t *testing.T) {
+	start := getStartGame()
+
+	e4 := CreateMoveStr("e2", "e4")
+
+	start.MakeMove(e4)
+
+	residual := start.GetStr("e2")
+
+	if residual != 0 {
+		t.Errorf("board did not properly move pawn, expected 0, got %x",
+			residual)
+	}
+
+	residual = start.GetStr("e4")
+
+	if residual != Pawn|White {
+		t.Errorf("board did not properly move pawn, expected %x, got %x",
+			Pawn|White, residual)
+	}
+}
+
 func TestGetCoords(t *testing.T) {
-	t.Parallel()
 	tests := map[string]struct {
 		input byte
 		x, y  byte
