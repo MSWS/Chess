@@ -53,5 +53,5 @@ func (game Board) getMovesFor(coord Coordinate) []Move {
 }
 
 func (game Board) getPawnMoves(coord Coordinate) []Move {
-
+	return []Move{}
 }
