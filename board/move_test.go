@@ -89,6 +89,54 @@ func TestGetMoves(t *testing.T) {
 	})
 }
 
+func TestCreateMove(t *testing.T) {
+	t.Run("Basic Pawn Push", func(t *testing.T) {
+		start := getStartGame()
+		move := start.CreateMoveStr("e2", "e4")
+
+		if move.from.GetAlgebra() != "e2" {
+			t.Errorf("expected origin square to be %v, got %v", "e2", move.from.GetAlgebra())
+		}
+
+		if move.to.GetAlgebra() != "e4" {
+			t.Errorf("expected target square to be %v, got %v", "e4", move.to.GetAlgebra())
+		}
+
+		if move.piece != White|Pawn {
+			t.Errorf("expected origin piece to be %v, got %v", Piece(White|Pawn).GetRune(), move.piece.GetRune())
+		}
+
+		if move.capture != 0 {
+			t.Errorf("expected captured piece to be %v, got %v", 0, move.capture)
+		}
+	})
+
+	t.Run("Rook x Rook", func(t *testing.T) {
+		baseRooks := [8][8]Piece{
+			{White | Rook},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{},
+			{Black | Rook},
+		}
+		board := Board{
+			Board: &baseRooks,
+		}
+
+		move := board.CreateMoveStr("a1", "a8")
+
+		if move.piece != White|Rook {
+			t.Errorf("expected origin piece to be %v, got %v", Piece(White|Rook).GetRune(), move.piece.GetRune())
+		}
+		if move.capture != Black|Rook {
+			t.Errorf("expected captured piece to be %v, got %v", Piece(Black|Rook).GetRune(), move.capture.GetRune())
+		}
+	})
+}
+
 func testForBothColors(t *testing.T, test func(color Piece)) {
 	t.Run("White", func(t *testing.T) {
 		test(White)

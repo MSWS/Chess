@@ -61,7 +61,6 @@ func (game Board) GetMoves() []Move {
 				continue
 			}
 
-			// result = append(result, piece.GetLegalMoves(game)...)
 			result = append(result, game.getMovesFor(CreateCoordInt(row, col))...)
 		}
 	}
@@ -91,14 +90,7 @@ func (game Board) getMovesFor(coord Coordinate) []Move {
 }
 
 func (game Board) getPawnMoves(coord Coordinate) []Move {
-	preCheckRow, _ := coord.GetCoords()
-
-	if preCheckRow == 0 || preCheckRow == 7 {
-		panic(fmt.Errorf("pawn on backranks does not make sense? (%v/%v)", preCheckRow, coord))
-	}
-
 	piece := game.Get(coord)
-
 	moves := []Move{}
 
 	if piece.GetColor() == White {
