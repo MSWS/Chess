@@ -79,6 +79,17 @@ func (board Board) MakeMove(move Move) Move {
 	return move
 }
 
+func (board Board) MakeMoveStr(str string) {
+	switch str {
+	case "e4":
+		board.MakeMove(CreateMoveStr("e2", "e4"))
+	case "e5":
+		board.MakeMove(CreateMoveStr("e7", "e5"))
+	default:
+		panic(fmt.Errorf("unsupported make move call with %v", str))
+	}
+}
+
 // A board that represents a given game.
 // Represents all data that is stored in a FEN string.
 // i.e. given a Board, you can find the FEN, and vice-versa

@@ -29,6 +29,24 @@ func TestMakeMove(t *testing.T) {
 	}
 }
 
+func TestMakeMoveStr(t *testing.T) {
+	start := getStartGame()
+	start.MakeMoveStr("e4")
+	residual := start.GetStr("e2")
+
+	if residual != 0 {
+		t.Errorf("board did not properly move pawn, expected 0, got %x",
+			residual)
+	}
+
+	residual = start.GetStr("e4")
+
+	if residual != Pawn|White {
+		t.Errorf("board did not properly move pawn, expected %x, got %x",
+			Pawn|White, residual)
+	}
+}
+
 func TestGetCoords(t *testing.T) {
 	tests := map[string]struct {
 		input byte
