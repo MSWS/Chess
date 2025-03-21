@@ -81,7 +81,7 @@ func (board *Board) MakeMove(move Move) Move {
 
 	row, _ := move.to.GetCoords()
 
-	if move.piece == Pawn && row == 0 || row == 7 {
+	if move.piece.GetType() == Pawn && (row == 0 || row == 7) {
 		if move.promotionTo == 0 {
 			move.promotionTo = Queen | move.piece.GetColor()
 		}
