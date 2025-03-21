@@ -24,38 +24,53 @@ func TestMakeMove(t *testing.T) {
 
 		residual = start.GetStr("e4")
 
-		if residual != Pawn|White {
+		if residual != White|Pawn {
 			t.Errorf("board did not properly move pawn, expected %x, got %x",
-				Pawn|White, residual)
+				White|Pawn, residual)
 		}
 	})
 
 	t.Run("Castling", func(t *testing.T) {
-		start, err := FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R w KQkq - 0 1")
+		t.Run("Updates", func(t *testing.T) {
+			start, err := FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R w KQkq - 0 1")
+			if err != nil {
+				t.Fatal(err)
+			}
+			move := start.CreateMoveStr("e1", "f1")
+			start.MakeMove(move)
 
-		if err != nil {
-			t.Fatal(err)
-		}
+			castle := start.WhiteCastling
 
-		castle := start.CreateMoveStr("e1", "h1")
-		start.MakeMove(castle)
-		castlability := start.WhiteCastling
+			if castle.CanKingSide || castle.CanQueenSide {
+				t.Errorf("board did not mark white as longer able to castle (%v)", castle)
+			}
+		})
+		t.Run("Succeeds", func(t *testing.T) {
+			start, err := FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R w KQkq - 0 1")
+			if err != nil {
+				t.Fatal(err)
+			}
 
-		if castlability.CanKingSide || castlability.CanQueenSide {
-			t.Errorf("board did not mark white as no longer able to castle (%v)", castlability)
-		}
+			castle := start.CreateMoveStr("e1", "h1")
+			start.MakeMove(castle)
+			castlability := start.WhiteCastling
 
-		if start.GetStr("f1") != White|Rook {
-			t.Errorf("board did not properly place white rook at f1, got %v", start.GetStr("f1"))
-		}
+			if castlability.CanKingSide || castlability.CanQueenSide {
+				t.Errorf("board did not mark white as no longer able to castle (%v)", castlability)
+			}
 
-		if start.GetStr("g1") != White|King {
-			t.Errorf("board did not properly place white king at f1, got %v", start.GetStr("g1"))
-		}
+			if start.GetStr("f1") != White|Rook {
+				t.Errorf("board did not properly place white rook at f1, got %v", start.GetStr("f1"))
+			}
 
-		if start.GetStr("h1") != 0 {
-			t.Errorf("board did not properly remove rook at h1, got %v", start.GetStr("h1"))
-		}
+			if start.GetStr("g1") != White|King {
+				t.Errorf("board did not properly place white king at f1, got %v", start.GetStr("g1"))
+			}
+
+			if start.GetStr("h1") != 0 {
+				t.Errorf("board did not properly remove rook at h1, got %v", start.GetStr("h1"))
+			}
+		})
 	})
 
 	t.Run("Promotion", func(t *testing.T) {
@@ -71,7 +86,50 @@ func TestMakeMove(t *testing.T) {
 		start.MakeMove(move)
 
 		if start.Get(move.to) != White|Queen {
-			t.Errorf("board did not properly promote pawn to queen, got %v", start.Get(move.to))
+			t.Errorf("board did not properly promote pawn to queen, got %c", start.Get(move.to).GetRune())
+		}
+	})
+}
+
+func TestUndoMove(t *testing.T) {
+	t.Run("ChangesTurn", func(t *testing.T) {
+		start := getStartGame()
+		start.MakeMoveStr("e4")
+		if start.Active != Black {
+			t.Error("board failed to change active player after moving")
+		}
+
+		start.UndoMove()
+		if start.Active != White {
+			t.Error("board failed to change active player after undoing")
+		}
+	})
+
+	t.Run("Reverts Pawn", func(t *testing.T) {
+		start := getStartGame()
+		start.MakeMoveStr("e4")
+		start.UndoMove()
+
+		startFen := start.ToFEN()
+		if startFen != START_POSITION {
+			t.Errorf("reverting to original position did not restore to %v (got %v)", START_POSITION, startFen)
+		}
+	})
+
+	t.Run("Reverts Castling", func(t *testing.T) {
+		start, err := FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R w KQkq - 0 1")
+		if err != nil {
+			t.Error(err)
+		}
+
+		kingMove := start.CreateMoveStr("e1", "f1")
+		start.MakeMove(kingMove)
+		start.UndoMove()
+
+		castlability := start.WhiteCastling
+
+		if !castlability.CanKingSide || !castlability.CanQueenSide {
+			t.Errorf("board did not update white castlability after undoing (%v)", castlability)
 		}
 	})
 }
@@ -88,9 +146,9 @@ func TestMakeMoveStr(t *testing.T) {
 
 	residual = start.GetStr("e4")
 
-	if residual != Pawn|White {
+	if residual != White|Pawn {
 		t.Errorf("board did not properly move pawn, expected %x, got %x",
-			Pawn|White, residual)
+			White|Pawn, residual)
 	}
 }
 

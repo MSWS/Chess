@@ -14,6 +14,10 @@ import (
 // and the Y coordinate in the lower 4 bits
 type Coordinate byte
 
+func (coord Coordinate) String() string {
+	return coord.GetAlgebra()
+}
+
 func (coord Coordinate) GetCoords() (byte, byte) {
 	return byte(coord) >> 4, byte(coord) & 0b1111
 }
@@ -74,8 +78,14 @@ func (board *Board) MakeMove(move Move) Move {
 	move.capture = captured
 
 	board.Move(move.from, move.to)
-	if move.promotionTo != 0 {
-		board.Set(move.from, move.promotionTo)
+
+	row, _ := move.to.GetCoords()
+
+	if move.piece == Pawn && row == 0 || row == 7 {
+		if move.promotionTo == 0 {
+			move.promotionTo = Queen | move.piece.GetColor()
+		}
+		board.Set(move.to, move.promotionTo|move.piece.GetColor())
 	}
 
 	castlability := &board.WhiteCastling
@@ -155,7 +165,7 @@ func (board Board) applyCastle(move Move) {
 	board.Set(CreateCoordByte(castleRow, byte(rookSquare)), move.capture)
 }
 
-func (board Board) MakeMoveStr(str string) {
+func (board *Board) MakeMoveStr(str string) {
 	switch str {
 	case "e4":
 		board.MakeMove(board.CreateMoveStr("e2", "e4"))

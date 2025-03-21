@@ -198,6 +198,18 @@ func (game Board) getPawnMoves(coord Coordinate) []Move {
 		}
 	}
 
+	for _, move := range moves {
+		row, _ := move.to.GetCoords()
+
+		if row == 0 || row == 7 {
+			// A 0 promotionTo defaults to Queen for simplicity
+			for _, piece := range []Piece{Knight, Bishop, Rook} {
+				move.promotionTo = piece | move.piece.GetColor()
+				moves = append(moves, move)
+			}
+		}
+	}
+
 	return moves
 }
 
