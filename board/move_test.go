@@ -1,6 +1,7 @@
 package board
 
 import (
+	"strconv"
 	"testing"
 )
 
@@ -69,7 +70,7 @@ func TestGetMoves(t *testing.T) {
 		}
 	})
 
-	t.Run("e4e5", func(t *testing.T) {
+	t.Run("e4 e5", func(t *testing.T) {
 		start := getStartGame()
 		start.MakeMoveStr("e4")
 		start.MakeMoveStr("e5")
@@ -87,6 +88,52 @@ func TestGetMoves(t *testing.T) {
 			}
 		})
 	})
+
+	t.Run("Nf3 g5", func(t *testing.T) {
+		start, err := FromFEN("rnbqkbnr/pppp1ppp/8/4p3/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 2")
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		total := start.GetMoves()
+
+		if len(total) != 22 {
+			t.Errorf("invalid number of legal moves, expected %d, got %d\n%v", 22, len(total), total)
+		}
+	})
+}
+
+func TestMovePly(t *testing.T) {
+	knownPerts := []int{1, 20, 400, 8092, 197281, 4865609 /*, 119060324, 3195901860*/}
+
+	start := getStartGame()
+	for ply := 1; ply < len(knownPerts); ply++ {
+		t.Run(strconv.Itoa(ply), func(t *testing.T) {
+			calculated := start.perft(ply)
+			if calculated != knownPerts[ply] {
+				t.Errorf("expected %v moves, got %v", knownPerts[ply], calculated)
+			}
+		})
+	}
+}
+
+func (game Board) perft(depth int) int {
+	var nodes int
+
+	moves := game.GetMoves()
+
+	if depth == 1 {
+		return len(moves)
+	}
+
+	for _, move := range moves {
+		game.MakeMove(move)
+		nodes += game.perft(depth - 1)
+		game.UndoMove(move)
+	}
+
+	return nodes
 }
 
 func TestCreateMove(t *testing.T) {

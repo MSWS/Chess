@@ -95,14 +95,14 @@ func (game Board) getPawnMoves(coord Coordinate) []Move {
 
 	if piece.GetColor() == White {
 		row, col := coord.GetCoords()
-		if row == 1 {
+		if row == 1 && game.Board[row+1][col] == 0 {
 			moves = append(moves, game.CreateMove(coord, CreateCoordByte(row+2, col)))
 		}
 
 		moves = append(moves, game.CreateMove(coord, CreateCoordByte(row+1, col)))
 	} else {
 		row, col := coord.GetCoords()
-		if row == 6 {
+		if row == 6 && game.Board[row-1][col] == 0 {
 			moves = append(moves, game.CreateMove(coord, CreateCoordByte(row-2, col)))
 		}
 
@@ -110,8 +110,7 @@ func (game Board) getPawnMoves(coord Coordinate) []Move {
 	}
 
 	moves = filter(moves, func(m Move) bool {
-		target := game.Get(m.to)
-		return target == 0
+		return m.capture == 0
 	})
 
 	return moves
@@ -231,16 +230,12 @@ func filter[T any](arr []T, predicate func(T) bool) []T {
 
 func (board Board) filterEnemies(moves []Move) []Move {
 	return filter(moves, func(m Move) bool {
-		from := board.Get(m.from)
-		target := board.Get(m.to)
-		return target == 0 || target.GetColor() == from.GetColor()
+		return m.capture == 0 || m.piece.GetColor() == m.capture.GetColor()
 	})
 }
 
 func (board Board) filterAllies(moves []Move) []Move {
 	return filter(moves, func(m Move) bool {
-		from := board.Get(m.from)
-		target := board.Get(m.to)
-		return target == 0 || target.GetColor() != from.GetColor()
+		return m.capture == 0 || m.piece.GetColor() != m.capture.GetColor()
 	})
 }

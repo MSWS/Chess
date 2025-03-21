@@ -67,7 +67,7 @@ func (board Board) Move(from Coordinate, to Coordinate) {
 	board.Board[fromRow][fromCol] = 0
 }
 
-func (board Board) MakeMove(move Move) Move {
+func (board *Board) MakeMove(move Move) Move {
 	captured := board.Get(move.to)
 	if captured != 0 {
 		move.capture = captured
@@ -76,12 +76,15 @@ func (board Board) MakeMove(move Move) Move {
 	if move.promotionTo != 0 {
 		board.Set(move.to, move.promotionTo)
 	}
+
+	board.Active = (^board.Active).GetColor()
 	return move
 }
 
-func (board Board) UndoMove(move Move) {
+func (board *Board) UndoMove(move Move) {
 	board.Set(move.to, move.capture)
 	board.Set(move.from, move.piece)
+	board.Active = (^board.Active).GetColor()
 }
 
 func (board Board) MakeMoveStr(str string) {
