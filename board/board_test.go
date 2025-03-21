@@ -57,6 +57,23 @@ func TestMakeMove(t *testing.T) {
 			t.Errorf("board did not properly remove rook at h1, got %v", start.GetStr("h1"))
 		}
 	})
+
+	t.Run("Promotion", func(t *testing.T) {
+		start, err := FromFEN("8/3P4/8/8/8/8/8/8 w - - 0 1")
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		move := start.CreateMoveStr("d7", "d8")
+		move.promotionTo = Queen
+
+		start.MakeMove(move)
+
+		if start.Get(move.to) != White|Queen {
+			t.Errorf("board did not properly promote pawn to queen, got %v", start.Get(move.to))
+		}
+	})
 }
 
 func TestMakeMoveStr(t *testing.T) {
