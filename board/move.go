@@ -12,6 +12,21 @@ type Move struct {
 	promotionTo Piece
 }
 
+func (move Move) IsCastle() bool {
+	if move.piece.GetType() != King {
+		return false
+	}
+
+	_, fromCol := move.from.GetCoords()
+	_, toCol := move.to.GetCoords()
+
+	if fromCol > toCol {
+		toCol, fromCol = fromCol, toCol
+	}
+
+	return toCol-fromCol > 1
+}
+
 func (move Move) String() string {
 	fx, fy := move.from.GetCoords()
 	tx, ty := move.to.GetCoords()
@@ -220,6 +235,37 @@ func (game Board) getKingMoves(coord Coordinate) []Move {
 	}
 
 	moves = game.filterAllies(moves)
+	return append(moves, game.getCastleMoves(coord)...)
+}
+
+func (game Board) getCastleMoves(coord Coordinate) []Move {
+	moves := []Move{}
+	castling := game.WhiteCastling
+	castleRow := 0
+
+	if game.Active == Black {
+		castling = game.BlackCastling
+		castleRow = 7
+	}
+
+	if castling.CanKingSide {
+		if game.Board[castleRow][5] == 0 && game.Board[castleRow][6] == 0 {
+			moves = append(moves, game.CreateMove(coord, CreateCoordInt(castleRow, 7)))
+		}
+	}
+
+	if castling.CanQueenSide {
+		for col := 1; col < 3; col++ {
+			if game.Board[castleRow][col] != 0 {
+				return moves
+			}
+		}
+
+		moves = append(moves, game.CreateMove(coord, CreateCoordInt(castleRow, 0)))
+	}
+	// if len(moves) != 0 {
+	// 	panic(fmt.Sprintf("found castle moves: %v", moves))
+	// }
 	return moves
 }
 

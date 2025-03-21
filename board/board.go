@@ -69,12 +69,33 @@ func (board Board) Move(from Coordinate, to Coordinate) {
 
 func (board *Board) MakeMove(move Move) Move {
 	captured := board.Get(move.to)
-	if captured != 0 {
-		move.capture = captured
-	}
+	move.capture = captured
+
 	board.Move(move.from, move.to)
 	if move.promotionTo != 0 {
 		board.Set(move.to, move.promotionTo)
+	}
+
+	castlability := &board.WhiteCastling
+	if move.piece.GetColor() == Black {
+		castlability = &board.BlackCastling
+	}
+
+	if move.piece.GetType() == Rook {
+		_, col := move.from.GetCoords()
+		if col == 0 {
+			castlability.CanQueenSide = false
+		} else if col == 7 {
+			castlability.CanKingSide = false
+		}
+	}
+
+	if move.piece.GetType() == King {
+		castlability = &Castlability{}
+
+		if move.IsCastle() {
+			board.applyCastle(move)
+		}
 	}
 
 	board.Active = (^board.Active).GetColor()
@@ -84,7 +105,36 @@ func (board *Board) MakeMove(move Move) Move {
 func (board *Board) UndoMove(move Move) {
 	board.Set(move.to, move.capture)
 	board.Set(move.from, move.piece)
+	if move.IsCastle() {
+		_, toCol := move.to.GetCoords()
+		castling := &board.WhiteCastling
+		if board.Active == Black {
+			castling = &board.BlackCastling
+		}
+
+		if toCol == 0 {
+			castling.CanQueenSide = true
+		} else {
+			castling.CanKingSide = true
+		}
+	}
+
 	board.Active = (^board.Active).GetColor()
+}
+
+func (board Board) applyCastle(move Move) {
+	kingSquare := 2
+	rookSquare := 3
+	castleRow, castleCol := move.to.GetCoords()
+
+	if castleCol == 7 {
+		kingSquare = 6
+		rookSquare = 5
+	}
+
+	board.Set(move.to, 0)
+	board.Set(CreateCoordByte(castleRow, byte(kingSquare)), move.piece)
+	board.Set(CreateCoordByte(castleRow, byte(rookSquare)), move.capture)
 }
 
 func (board Board) MakeMoveStr(str string) {
