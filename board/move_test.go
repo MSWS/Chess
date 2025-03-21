@@ -160,12 +160,30 @@ func TestPerfs(t *testing.T) {
 				t.Run(strconv.Itoa(ply), func(t *testing.T) {
 					calculated := start.perft(ply)
 					if calculated != test.knownPerfs[ply-1] {
-						t.Errorf("expected %v moves, got %v", test.knownPerfs[ply-1], calculated)
+						t.Errorf("expected %v nodes, got %v", test.knownPerfs[ply-1], calculated)
 					}
 				})
 			}
 		})
 	}
+}
+
+func TestIsCastle(t *testing.T) {
+	start := getStartGame()
+	t.Run("King-Side", func(t *testing.T) {
+		castle := start.CreateMoveStr("e1", "h1")
+
+		if !castle.IsCastle() {
+			t.Fail()
+		}
+	})
+	t.Run("Queen-Side", func(t *testing.T) {
+		castle := start.CreateMoveStr("e1", "a1")
+
+		if !castle.IsCastle() {
+			t.Fail()
+		}
+	})
 }
 
 func (game Board) perft(depth int) int {

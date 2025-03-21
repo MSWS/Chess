@@ -8,25 +8,55 @@ import (
 )
 
 func TestMakeMove(t *testing.T) {
-	start := getStartGame()
+	t.Run("e4", func(t *testing.T) {
+		start := getStartGame()
 
-	e4 := start.CreateMoveStr("e2", "e4")
+		e4 := start.CreateMoveStr("e2", "e4")
 
-	start.MakeMove(e4)
+		start.MakeMove(e4)
 
-	residual := start.GetStr("e2")
+		residual := start.GetStr("e2")
 
-	if residual != 0 {
-		t.Errorf("board did not properly move pawn, expected 0, got %x",
-			residual)
-	}
+		if residual != 0 {
+			t.Errorf("board did not properly move pawn, expected 0, got %x",
+				residual)
+		}
 
-	residual = start.GetStr("e4")
+		residual = start.GetStr("e4")
 
-	if residual != Pawn|White {
-		t.Errorf("board did not properly move pawn, expected %x, got %x",
-			Pawn|White, residual)
-	}
+		if residual != Pawn|White {
+			t.Errorf("board did not properly move pawn, expected %x, got %x",
+				Pawn|White, residual)
+		}
+	})
+
+	t.Run("Castling", func(t *testing.T) {
+		start, err := FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQK2R w KQkq - 0 1")
+
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		castle := start.CreateMoveStr("e1", "h1")
+		start.MakeMove(castle)
+		castlability := start.WhiteCastling
+
+		if castlability.CanKingSide || castlability.CanQueenSide {
+			t.Errorf("board did not mark white as no longer able to castle (%v)", castlability)
+		}
+
+		if start.GetStr("f1") != White|Rook {
+			t.Errorf("board did not properly place white rook at f1, got %v", start.GetStr("f1"))
+		}
+
+		if start.GetStr("g1") != White|King {
+			t.Errorf("board did not properly place white king at f1, got %v", start.GetStr("g1"))
+		}
+
+		if start.GetStr("h1") != 0 {
+			t.Errorf("board did not properly remove rook at h1, got %v", start.GetStr("h1"))
+		}
+	})
 }
 
 func TestMakeMoveStr(t *testing.T) {

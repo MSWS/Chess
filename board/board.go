@@ -91,7 +91,8 @@ func (board *Board) MakeMove(move Move) Move {
 	}
 
 	if move.piece.GetType() == King {
-		castlability = &Castlability{}
+		castlability.CanKingSide = false
+		castlability.CanQueenSide = false
 
 		if move.IsCastle() {
 			board.applyCastle(move)
@@ -198,7 +199,7 @@ func (board Board) PrettySPrint() string {
 func FromFEN(str string) (*Board, error) {
 	result := Board{}
 
-	records := strings.Split(str, " ")
+	records := strings.Split(strings.TrimSpace(str), " ")
 
 	if len(records) != 6 {
 		return nil, errors.New("malformed FEN string, expected 6 records")
