@@ -105,6 +105,22 @@ func (game Board) GetMoves() []Move {
 
 				legal := true
 				for _, enemyMove := range enemyMoves {
+					if psuedoMove.IsCastle() && enemyMove.capture.GetType() == Rook {
+						targetRow, targetCol := psuedoMove.to.GetCoords()
+						enemyRow, enemyCol := enemyMove.to.GetCoords()
+						if targetRow != enemyRow {
+							continue
+						}
+						if targetCol == 0 && enemyCol == 2 {
+							legal = false
+							break
+						}
+						if targetCol == 7 && enemyCol == 5 {
+							legal = false
+							break
+						}
+					}
+
 					if enemyMove.capture.GetType() == King {
 						legal = false
 						break
@@ -255,7 +271,7 @@ func (game Board) getCastleMoves(coord Coordinate) []Move {
 	}
 
 	if castling.CanQueenSide {
-		for col := 1; col < 3; col++ {
+		for col := 1; col <= 3; col++ {
 			if game.Board[castleRow][col] != 0 {
 				return moves
 			}
@@ -263,9 +279,6 @@ func (game Board) getCastleMoves(coord Coordinate) []Move {
 
 		moves = append(moves, game.CreateMove(coord, CreateCoordInt(castleRow, 0)))
 	}
-	// if len(moves) != 0 {
-	// 	panic(fmt.Sprintf("found castle moves: %v", moves))
-	// }
 	return moves
 }
 
