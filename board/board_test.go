@@ -1,6 +1,7 @@
 package board
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -118,7 +119,7 @@ func TestCreateCoordAlgebra(t *testing.T) {
 		},
 		{
 			input:    "g2",
-			expected: CreateCoordByte(6, 1),
+			expected: CreateCoordByte(1, 6),
 		},
 		{
 			input:    "h8",
@@ -140,6 +141,49 @@ func TestCreateCoordAlgebra(t *testing.T) {
 	}
 }
 
+func TestCreateEquivalence(t *testing.T) {
+	tests := []struct {
+		input    [2]int
+		expected Coordinate
+	}{
+		{
+			input:    [2]int{0, 0},
+			expected: 0<<4 + 0,
+		},
+		{
+			input:    [2]int{1, 1},
+			expected: CreateCoordInt(1, 1),
+		},
+		{
+			input:    [2]int{6, 1},
+			expected: CreateCoordByte(6, 1),
+		},
+		{
+			input:    [2]int{3, 2},
+			expected: CreateCoordByte(3, 2),
+		},
+		{
+			input:    [2]int{7, 7},
+			expected: 7<<4 + 7,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(fmt.Sprint(test.input), func(t *testing.T) {
+			intMade := CreateCoordInt(test.input[0], test.input[1])
+			byteMade := CreateCoordByte(byte(test.input[0]), byte(test.input[1]))
+
+			if intMade != byteMade {
+				t.Errorf("int is not equivalent as byte (%v vs %v)", intMade, byteMade)
+			}
+
+			if intMade != test.expected {
+				t.Errorf("int is not expected (got %v, expected %v)", intMade, test.expected)
+			}
+		})
+	}
+}
+
 func TestGetAlgebra(t *testing.T) {
 	tests := []struct {
 		input    Coordinate
@@ -154,7 +198,7 @@ func TestGetAlgebra(t *testing.T) {
 			expected: "b2",
 		},
 		{
-			input:    CreateCoordByte(6, 1),
+			input:    CreateCoordByte(1, 6),
 			expected: "g2",
 		},
 		{
@@ -199,7 +243,7 @@ func TestFromFEN(t *testing.T) {
 	t.Run("Simple Opening", func(t *testing.T) {
 		pos := "rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2"
 
-		coords := Coordinate(2<<4 + 5)
+		coords := Coordinate(5<<4 + 2)
 
 		expectedBoard := &Board{
 			Board: &[8][8]Piece{

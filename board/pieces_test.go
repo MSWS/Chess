@@ -30,6 +30,44 @@ func TestGetRune(t *testing.T) {
 	}
 }
 
+func TestGetPieceColor(t *testing.T) {
+	for _, color := range []Piece{White, Black} {
+		name := "White"
+		if color == Black {
+			name = "Black"
+		}
+		t.Run(name, func(t *testing.T) {
+			for _, piece := range []Piece{Rook, Knight, Bishop, Queen, King, Pawn} {
+				input := piece | color
+				t.Run(string(piece.GetRune()), func(t *testing.T) {
+					if input.GetColor() != color {
+						t.Errorf("%v returned %v instead of %v", piece, input.GetColor(), color)
+					}
+				})
+			}
+		})
+	}
+}
+
+func TestGetPieceType(t *testing.T) {
+	for _, color := range []Piece{White, Black} {
+		name := "White"
+		if color == Black {
+			name = "Black"
+		}
+		t.Run(name, func(t *testing.T) {
+			for _, piece := range []Piece{Rook, Knight, Bishop, Queen, King, Pawn} {
+				input := piece | color
+				t.Run(string(piece.GetRune()), func(t *testing.T) {
+					if input.GetType() != piece {
+						t.Errorf("%v returned %v instead of %v", piece, input.GetType(), piece)
+					}
+				})
+			}
+		})
+	}
+}
+
 func getTestData() []struct {
 	rune  rune
 	piece Piece

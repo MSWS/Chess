@@ -18,24 +18,27 @@ func (coord Coordinate) GetCoords() (byte, byte) {
 	return byte(coord) >> 4, byte(coord) & 0b1111
 }
 
-func CreateCoordInt(x int, y int) Coordinate {
-	return CreateCoordByte(byte(x), byte(y))
+func CreateCoordInt(row int, col int) Coordinate {
+	return CreateCoordByte(byte(row), byte(col))
 }
 
-func CreateCoordByte(x byte, y byte) Coordinate {
-	return Coordinate(x<<4 + y)
+func CreateCoordByte(row byte, col byte) Coordinate {
+	if row > 7 || col > 7 {
+		panic(fmt.Errorf("invalid row, col (%v, %v)", row, col))
+	}
+	return Coordinate(row<<4 + col)
 }
 
 func CreateCoordAlgebra(alg string) Coordinate {
-	x := alg[0] - 'a'
-	y := alg[1] - '1'
+	col := alg[0] - 'a'
+	row := alg[1] - '1'
 
-	return CreateCoordByte(x, y)
+	return CreateCoordByte(row, col)
 }
 
 func (coord Coordinate) GetAlgebra() string {
-	x, y := coord.GetCoords()
-	return fmt.Sprintf("%c%c", x+'a', y+'1')
+	row, col := coord.GetCoords()
+	return fmt.Sprintf("%c%c", col+'a', row+'1')
 }
 
 type Castlability struct {
@@ -44,8 +47,8 @@ type Castlability struct {
 }
 
 func (board Board) Get(coord Coordinate) Piece {
-	x, y := coord.GetCoords()
-	return board.Board[y][x]
+	row, col := coord.GetCoords()
+	return board.Board[row][col]
 }
 
 func (board Board) GetStr(coord string) Piece {
@@ -53,15 +56,15 @@ func (board Board) GetStr(coord string) Piece {
 }
 
 func (board Board) Set(coord Coordinate, piece Piece) {
-	x, y := coord.GetCoords()
-	board.Board[y][x] = piece
+	row, col := coord.GetCoords()
+	board.Board[row][col] = piece
 }
 
 func (board Board) Move(from Coordinate, to Coordinate) {
-	fromX, fromY := from.GetCoords()
-	toX, toY := to.GetCoords()
-	board.Board[toY][toX] = board.Board[fromY][fromX]
-	board.Board[fromY][fromX] = 0
+	fromRow, fromCol := from.GetCoords()
+	toRow, toCol := to.GetCoords()
+	board.Board[toRow][toCol] = board.Board[fromRow][fromCol]
+	board.Board[fromRow][fromCol] = 0
 }
 
 func (board Board) MakeMove(move Move) Move {
