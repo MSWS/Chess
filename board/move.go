@@ -74,9 +74,16 @@ func (game Board) getMovesFor(coord Coordinate) []Move {
 		return game.getPawnMoves(coord)
 	case Knight:
 		return game.getKnightMoves(coord)
-		// TODO
-		// default:
-		// 	panic(fmt.Errorf("unknown piece type: %v", piece))
+	case Bishop:
+		return game.getBishopMoves(coord)
+	case Rook:
+		return game.getRookMoves(coord)
+	case Queen:
+		return game.getQueenMoves(coord)
+	case King:
+		return game.getKingMoves(coord)
+	default:
+		panic(fmt.Errorf("unknown piece type: %v", piece))
 	}
 
 	return []Move{}
@@ -136,6 +143,85 @@ func (game Board) getKnightMoves(coord Coordinate) []Move {
 	}
 
 	moves = game.filterAllies(moves)
+	return moves
+}
+
+func (game Board) getBishopMoves(coord Coordinate) []Move {
+	return game.getSlidingMovesOf(coord, [][]int{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}})
+}
+
+func (game Board) getRookMoves(coord Coordinate) []Move {
+	return game.getSlidingMovesOf(coord, [][]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}})
+}
+
+func (game Board) getQueenMoves(coord Coordinate) []Move {
+	return append(game.getBishopMoves(coord), game.getRookMoves(coord)...)
+}
+
+func (game Board) getKingMoves(coord Coordinate) []Move {
+	moves := []Move{}
+
+	offsets := [][]int{{-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}}
+	sx, sy := coord.GetCoords()
+
+	for _, offset := range offsets {
+		tx := sx + byte(offset[0])
+		ty := sy + byte(offset[1])
+
+		if tx > 7 || ty > 7 {
+			continue
+		}
+
+		toCoord := CreateCoordByte(tx, ty)
+		moves = append(moves, CreateMove(coord, toCoord))
+	}
+
+	moves = game.filterAllies(moves)
+	return moves
+}
+
+func (game Board) getSlidingMovesOf(coord Coordinate, offsets [][]int) []Move {
+	moves := []Move{}
+
+	for _, offset := range offsets {
+		moves = append(moves, game.getSlidingMoves(coord, offset[0], offset[1])...)
+	}
+
+	return moves
+}
+
+func (game Board) getSlidingMoves(coord Coordinate, offsetX int, offsetY int) []Move {
+	moves := []Move{}
+
+	current := coord
+	ourPiece := game.Get(coord)
+
+	for {
+		cRow, cCol := current.GetCoords()
+
+		cRow += byte(offsetY)
+		cCol += byte(offsetX)
+
+		if cRow > 7 || cCol > 7 {
+			break
+		}
+
+		current = CreateCoordByte(cRow, cCol)
+		piece := game.Get(current)
+
+		move := CreateMove(coord, current)
+
+		if piece == 0 {
+			moves = append(moves, move)
+			continue
+		}
+
+		if piece.GetColor() != ourPiece.GetColor() {
+			moves = append(moves, move)
+		}
+		break
+	}
+
 	return moves
 }
 
