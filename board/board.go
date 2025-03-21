@@ -79,12 +79,17 @@ func (board Board) MakeMove(move Move) Move {
 	return move
 }
 
+func (board Board) UndoMove(move Move) {
+	board.Set(move.to, move.capture)
+	board.Set(move.from, move.piece)
+}
+
 func (board Board) MakeMoveStr(str string) {
 	switch str {
 	case "e4":
-		board.MakeMove(CreateMoveStr("e2", "e4"))
+		board.MakeMove(board.CreateMoveStr("e2", "e4"))
 	case "e5":
-		board.MakeMove(CreateMoveStr("e7", "e5"))
+		board.MakeMove(board.CreateMoveStr("e7", "e5"))
 	default:
 		panic(fmt.Errorf("unsupported make move call with %v", str))
 	}

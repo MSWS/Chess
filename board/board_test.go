@@ -10,7 +10,7 @@ import (
 func TestMakeMove(t *testing.T) {
 	start := getStartGame()
 
-	e4 := CreateMoveStr("e2", "e4")
+	e4 := start.CreateMoveStr("e2", "e4")
 
 	start.MakeMove(e4)
 

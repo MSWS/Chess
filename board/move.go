@@ -7,6 +7,7 @@ import (
 
 type Move struct {
 	from, to    Coordinate
+	piece       Piece
 	capture     Piece
 	promotionTo Piece
 }
@@ -30,17 +31,19 @@ func (move Move) String() string {
 	return sb.String()
 }
 
-func CreateMove(from Coordinate, to Coordinate) Move {
+func (board Board) CreateMove(from Coordinate, to Coordinate) Move {
 	result := Move{
-		from: from,
-		to:   to,
+		from:    from,
+		to:      to,
+		piece:   board.Get(from),
+		capture: board.Get(to),
 	}
 
 	return result
 }
 
-func CreateMoveStr(from string, to string) Move {
-	return CreateMove(
+func (board Board) CreateMoveStr(from string, to string) Move {
+	return board.CreateMove(
 		CreateCoordAlgebra(from),
 		CreateCoordAlgebra(to),
 	)
@@ -85,8 +88,6 @@ func (game Board) getMovesFor(coord Coordinate) []Move {
 	default:
 		panic(fmt.Errorf("unknown piece type: %v", piece))
 	}
-
-	return []Move{}
 }
 
 func (game Board) getPawnMoves(coord Coordinate) []Move {
@@ -103,17 +104,17 @@ func (game Board) getPawnMoves(coord Coordinate) []Move {
 	if piece.GetColor() == White {
 		row, col := coord.GetCoords()
 		if row == 1 {
-			moves = append(moves, CreateMove(coord, CreateCoordByte(row+2, col)))
+			moves = append(moves, game.CreateMove(coord, CreateCoordByte(row+2, col)))
 		}
 
-		moves = append(moves, CreateMove(coord, CreateCoordByte(row+1, col)))
+		moves = append(moves, game.CreateMove(coord, CreateCoordByte(row+1, col)))
 	} else {
 		row, col := coord.GetCoords()
 		if row == 6 {
-			moves = append(moves, CreateMove(coord, CreateCoordByte(row-2, col)))
+			moves = append(moves, game.CreateMove(coord, CreateCoordByte(row-2, col)))
 		}
 
-		moves = append(moves, CreateMove(coord, CreateCoordByte(row-1, col)))
+		moves = append(moves, game.CreateMove(coord, CreateCoordByte(row-1, col)))
 	}
 
 	moves = filter(moves, func(m Move) bool {
@@ -139,7 +140,7 @@ func (game Board) getKnightMoves(coord Coordinate) []Move {
 		}
 
 		toCoord := CreateCoordByte(tx, ty)
-		moves = append(moves, CreateMove(coord, toCoord))
+		moves = append(moves, game.CreateMove(coord, toCoord))
 	}
 
 	moves = game.filterAllies(moves)
@@ -173,7 +174,7 @@ func (game Board) getKingMoves(coord Coordinate) []Move {
 		}
 
 		toCoord := CreateCoordByte(tx, ty)
-		moves = append(moves, CreateMove(coord, toCoord))
+		moves = append(moves, game.CreateMove(coord, toCoord))
 	}
 
 	moves = game.filterAllies(moves)
@@ -194,7 +195,6 @@ func (game Board) getSlidingMoves(coord Coordinate, offsetX int, offsetY int) []
 	moves := []Move{}
 
 	current := coord
-	ourPiece := game.Get(coord)
 
 	for {
 		cRow, cCol := current.GetCoords()
@@ -207,16 +207,15 @@ func (game Board) getSlidingMoves(coord Coordinate, offsetX int, offsetY int) []
 		}
 
 		current = CreateCoordByte(cRow, cCol)
-		piece := game.Get(current)
 
-		move := CreateMove(coord, current)
+		move := game.CreateMove(coord, current)
 
-		if piece == 0 {
+		if move.capture == 0 {
 			moves = append(moves, move)
 			continue
 		}
 
-		if piece.GetColor() != ourPiece.GetColor() {
+		if move.piece.GetColor() != move.capture.GetColor() {
 			moves = append(moves, move)
 		}
 		break
