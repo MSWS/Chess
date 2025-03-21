@@ -74,12 +74,6 @@ func TestGetMoves(t *testing.T) {
 		start := getStartGame()
 		start.MakeMoveStr("e4")
 		start.MakeMoveStr("e5")
-
-		t.Cleanup(func() {
-			start := getStartGame()
-			start.MakeMoveStr("e4")
-			start.MakeMoveStr("e5")
-		})
 		t.Run("Total Moves", func(t *testing.T) {
 			total := start.GetMoves()
 
@@ -89,19 +83,42 @@ func TestGetMoves(t *testing.T) {
 		})
 	})
 
-	t.Run("Nf3 g5", func(t *testing.T) {
-		start, err := FromFEN("rnbqkbnr/pppp1ppp/8/4p3/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 2")
+	data := map[string]struct {
+		input string
+		moves int
+	}{
+		"Nf3 g5": {
+			input: "rnbqkbnr/pppp1ppp/8/4p3/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 2",
+			moves: 22,
+		},
+		"a4 a5": {
+			input: "rnbqkbnr/1ppppppp/8/p7/P7/8/1PPPPPPP/RNBQKBNR w KQkq - 0 2",
+			moves: 20,
+		},
+		"Kiwipete": {
+			input: "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 0",
+			moves: 48,
+		},
+		"3": {
+			input: "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+			moves: 14,
+		},
+	}
 
-		if err != nil {
-			t.Error(err)
-		}
+	for name, test := range data {
+		t.Run(name, func(t *testing.T) {
+			start, err := FromFEN(test.input)
 
-		total := start.GetMoves()
+			if err != nil {
+				t.Error(err)
+			}
+			total := start.GetMoves()
 
-		if len(total) != 22 {
-			t.Errorf("invalid number of legal moves, expected %d, got %d\n%v", 22, len(total), total)
-		}
-	})
+			if len(total) != test.moves {
+				t.Errorf("invalid number of legal moves, expected %d, got %d\n%v", test.moves, len(total), total)
+			}
+		})
+	}
 }
 
 func TestMovePly(t *testing.T) {

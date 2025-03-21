@@ -49,7 +49,7 @@ func (board Board) CreateMoveStr(from string, to string) Move {
 	)
 }
 
-func (game Board) GetMoves() []Move {
+func (game Board) GetImmediateMoves() []Move {
 	result := []Move{}
 
 	board := game.Board
@@ -62,6 +62,48 @@ func (game Board) GetMoves() []Move {
 			}
 
 			result = append(result, game.getMovesFor(CreateCoordInt(row, col))...)
+		}
+	}
+
+	return result
+}
+
+func (game Board) GetMoves() []Move {
+	result := []Move{}
+
+	board := game.Board
+	for row := 0; row < len(board); row++ {
+		for col := 0; col < len(board[row]); col++ {
+			piece := board[row][col]
+
+			if piece == 0 || piece.GetColor() != game.Active {
+				continue
+			}
+
+			psuedo := game.getMovesFor(CreateCoordInt(row, col))
+			legalMoves := []Move{}
+
+			for _, psuedoMove := range psuedo {
+				game.MakeMove(psuedoMove)
+
+				enemyMoves := game.GetImmediateMoves()
+
+				legal := true
+				for _, enemyMove := range enemyMoves {
+					if enemyMove.capture.GetType() == King {
+						legal = false
+						break
+					}
+				}
+
+				if legal {
+					legalMoves = append(legalMoves, psuedoMove)
+				}
+
+				game.UndoMove(psuedoMove)
+			}
+
+			result = append(result, legalMoves...)
 		}
 	}
 
@@ -92,26 +134,35 @@ func (game Board) getMovesFor(coord Coordinate) []Move {
 func (game Board) getPawnMoves(coord Coordinate) []Move {
 	piece := game.Get(coord)
 	moves := []Move{}
+	direction := 1
+	if piece.GetColor() == Black {
+		direction = -1
+	}
 
+	row, col := coord.GetCoords()
 	if piece.GetColor() == White {
-		row, col := coord.GetCoords()
 		if row == 1 && game.Board[row+1][col] == 0 {
 			moves = append(moves, game.CreateMove(coord, CreateCoordByte(row+2, col)))
 		}
-
-		moves = append(moves, game.CreateMove(coord, CreateCoordByte(row+1, col)))
 	} else {
-		row, col := coord.GetCoords()
 		if row == 6 && game.Board[row-1][col] == 0 {
 			moves = append(moves, game.CreateMove(coord, CreateCoordByte(row-2, col)))
 		}
-
-		moves = append(moves, game.CreateMove(coord, CreateCoordByte(row-1, col)))
 	}
-
+	moves = append(moves, game.CreateMove(coord, CreateCoordInt(int(row)+direction, int(col))))
 	moves = filter(moves, func(m Move) bool {
 		return m.capture == 0
 	})
+
+	for _, dx := range []int{-1, 1} {
+		if col+byte(dx) > 7 {
+			continue
+		}
+		capture := game.CreateMove(coord, CreateCoordInt(int(row)+direction, int(col)+dx))
+		if capture.capture != 0 && capture.piece.GetColor() != capture.capture.GetColor() {
+			moves = append(moves, capture)
+		}
+	}
 
 	return moves
 }
