@@ -103,6 +103,18 @@ func TestGetMoves(t *testing.T) {
 			input: "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
 			moves: 14,
 		},
+		"4": {
+			input: "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
+			moves: 6,
+		},
+		"4 - mirrored": {
+			input: "r2q1rk1/pP1p2pp/Q4n2/bbp1p3/Np6/1B3NBn/pPPP1PPP/R3K2R b KQ - 0 1",
+			moves: 6,
+		},
+		"5": {
+			input: "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8",
+			moves: 44,
+		},
 	}
 
 	for name, test := range data {
@@ -121,15 +133,36 @@ func TestGetMoves(t *testing.T) {
 	}
 }
 
-func TestMovePly(t *testing.T) {
-	knownPerts := []int{1, 20, 400, 8092, 197281, 4865609 /*, 119060324, 3195901860*/}
+func TestPerfs(t *testing.T) {
+	data := map[string]struct {
+		FEN        string
+		knownPerfs []int
+	}{
+		"Starting Position": {
+			knownPerfs: []int{20, 400, 8092, 197281 /*4865609, 119060324, 3195901860*/},
+			FEN:        START_POSITION,
+		},
+		"Kiwipete": {
+			knownPerfs: []int{48, 2039, 97862, 4085603 /*, 193690690 */},
+			FEN:        "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 0",
+		},
+	}
 
-	start := getStartGame()
-	for ply := 1; ply < len(knownPerts); ply++ {
-		t.Run(strconv.Itoa(ply), func(t *testing.T) {
-			calculated := start.perft(ply)
-			if calculated != knownPerts[ply] {
-				t.Errorf("expected %v moves, got %v", knownPerts[ply], calculated)
+	for name, test := range data {
+		t.Run(name, func(t *testing.T) {
+			start, err := FromFEN(test.FEN)
+
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			for ply := 1; ply < len(test.knownPerfs); ply++ {
+				t.Run(strconv.Itoa(ply), func(t *testing.T) {
+					calculated := start.perft(ply)
+					if calculated != test.knownPerfs[ply-1] {
+						t.Errorf("expected %v moves, got %v", test.knownPerfs[ply-1], calculated)
+					}
+				})
 			}
 		})
 	}
