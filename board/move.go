@@ -105,6 +105,9 @@ func (game Board) GetMoves() []Move {
 
 				legal := true
 				for _, enemyMove := range enemyMoves {
+					if enemyMove.IsCastle() {
+						continue
+					}
 					if psuedoMove.IsCastle() && enemyMove.capture.GetType() == Rook {
 						targetRow, targetCol := psuedoMove.to.GetCoords()
 						enemyRow, enemyCol := enemyMove.to.GetCoords()
@@ -131,7 +134,7 @@ func (game Board) GetMoves() []Move {
 					legalMoves = append(legalMoves, psuedoMove)
 				}
 
-				game.UndoMove(psuedoMove)
+				game.UndoMove()
 			}
 
 			result = append(result, legalMoves...)

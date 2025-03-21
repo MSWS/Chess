@@ -68,12 +68,14 @@ func (board Board) Move(from Coordinate, to Coordinate) {
 }
 
 func (board *Board) MakeMove(move Move) Move {
+	board.WhiteCastleHistory = append(board.WhiteCastleHistory, board.WhiteCastling)
+	board.BlackCastleHistory = append(board.BlackCastleHistory, board.BlackCastling)
 	captured := board.Get(move.to)
 	move.capture = captured
 
 	board.Move(move.from, move.to)
 	if move.promotionTo != 0 {
-		board.Set(move.to, move.promotionTo)
+		board.Set(move.from, move.promotionTo)
 	}
 
 	castlability := &board.WhiteCastling
@@ -100,27 +102,42 @@ func (board *Board) MakeMove(move Move) Move {
 	}
 
 	board.Active = (^board.Active).GetColor()
+	board.Moves = append(board.Moves, move)
 	return move
 }
 
-func (board *Board) UndoMove(move Move) {
+func (board *Board) UndoMove() {
+	move := board.Moves[len(board.Moves)-1]
 	board.Set(move.to, move.capture)
 	board.Set(move.from, move.piece)
+
+	castling := &board.WhiteCastling
+	if move.piece.GetColor() == Black {
+		castling = &board.BlackCastling
+	}
+
 	if move.IsCastle() {
-		_, toCol := move.to.GetCoords()
-		castling := &board.WhiteCastling
-		if board.Active == Black {
-			castling = &board.BlackCastling
-		}
+		toRow, toCol := move.to.GetCoords()
 
 		if toCol == 0 {
 			castling.CanQueenSide = true
+			board.Set(CreateCoordInt(int(toRow), 1), 0)
+			board.Set(CreateCoordInt(int(toRow), 2), 0)
+			board.Set(CreateCoordInt(int(toRow), 3), 0)
 		} else {
 			castling.CanKingSide = true
+			board.Set(CreateCoordInt(int(toRow), 5), 0)
+			board.Set(CreateCoordInt(int(toRow), 6), 0)
 		}
 	}
 
 	board.Active = (^board.Active).GetColor()
+	board.Moves = board.Moves[0 : len(board.Moves)-1]
+	board.WhiteCastling = board.WhiteCastleHistory[len(board.WhiteCastleHistory)-1]
+	board.BlackCastling = board.BlackCastleHistory[len(board.BlackCastleHistory)-1]
+
+	board.WhiteCastleHistory = board.WhiteCastleHistory[0 : len(board.WhiteCastleHistory)-1]
+	board.BlackCastleHistory = board.BlackCastleHistory[0 : len(board.BlackCastleHistory)-1]
 }
 
 func (board Board) applyCastle(move Move) {
@@ -166,6 +183,10 @@ type Board struct {
 	EnPassant     *Coordinate
 	HalfMoves     int
 	FullMoves     int
+
+	Moves              []Move
+	WhiteCastleHistory []Castlability
+	BlackCastleHistory []Castlability
 }
 
 type Bitboard uint64

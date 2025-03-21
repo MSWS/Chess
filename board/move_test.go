@@ -198,7 +198,7 @@ func (game Board) perft(depth int) int {
 	for _, move := range moves {
 		game.MakeMove(move)
 		nodes += game.perft(depth - 1)
-		game.UndoMove(move)
+		game.UndoMove()
 	}
 
 	return nodes
