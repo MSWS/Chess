@@ -301,13 +301,13 @@ func (game Board) getCastleMoves(coord Coordinate) []Move {
 		castleRow = 7
 	}
 
-	if castling.CanKingSide {
+	if castling.KingSide {
 		if game.Board[castleRow][5] == 0 && game.Board[castleRow][6] == 0 {
 			moves = append(moves, game.CreateMove(coord, CreateCoordInt(castleRow, 7)))
 		}
 	}
 
-	if castling.CanQueenSide {
+	if castling.QueenSide {
 		for col := 1; col <= 3; col++ {
 			if game.Board[castleRow][col] != 0 {
 				return moves

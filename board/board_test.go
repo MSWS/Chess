@@ -41,7 +41,7 @@ func TestMakeMove(t *testing.T) {
 
 			castle := start.WhiteCastling
 
-			if castle.CanKingSide || castle.CanQueenSide {
+			if castle.KingSide || castle.QueenSide {
 				t.Errorf("board did not mark white as longer able to castle (%v)", castle)
 			}
 		})
@@ -55,7 +55,7 @@ func TestMakeMove(t *testing.T) {
 			start.MakeMove(castle)
 			castlability := start.WhiteCastling
 
-			if castlability.CanKingSide || castlability.CanQueenSide {
+			if castlability.KingSide || castlability.QueenSide {
 				t.Errorf("board did not mark white as no longer able to castle (%v)", castlability)
 			}
 
@@ -202,7 +202,7 @@ func TestUndoMove(t *testing.T) {
 
 		castlability := start.WhiteCastling
 
-		if !castlability.CanKingSide || !castlability.CanQueenSide {
+		if !castlability.KingSide || !castlability.QueenSide {
 			t.Errorf("board did not update white castlability after undoing (%v)", castlability)
 		}
 	})
@@ -582,8 +582,8 @@ func TestFromFEN(t *testing.T) {
 				startRow,
 			},
 			Active:        White,
-			WhiteCastling: Castlability{true, true},
-			BlackCastling: Castlability{true, true},
+			WhiteCastling: Castling{true, true},
+			BlackCastling: Castling{true, true},
 			EnPassant:     &coords,
 			HalfMoves:     0,
 			FullMoves:     2,
@@ -643,8 +643,8 @@ func getStartGame() Board {
 	return Board{
 		Board:         getStartBoard(),
 		Active:        White,
-		WhiteCastling: Castlability{true, true},
-		BlackCastling: Castlability{true, true},
+		WhiteCastling: Castling{true, true},
+		BlackCastling: Castling{true, true},
 		EnPassant:     nil,
 		HalfMoves:     0,
 		FullMoves:     1,

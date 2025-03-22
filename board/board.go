@@ -50,9 +50,9 @@ func (coord Coordinate) GetAlgebra() string {
 	return fmt.Sprintf("%c%c", col+'a', row+'1')
 }
 
-type Castlability struct {
-	CanQueenSide bool
-	CanKingSide  bool
+type Castling struct {
+	QueenSide bool
+	KingSide  bool
 }
 
 func (board Board) Get(coord Coordinate) Piece {
@@ -105,15 +105,15 @@ func (board *Board) MakeMove(move Move) {
 
 	if move.piece.GetType() == Rook {
 		if fromCol == 0 {
-			castlability.CanQueenSide = false
+			castlability.QueenSide = false
 		} else if fromCol == 7 {
-			castlability.CanKingSide = false
+			castlability.KingSide = false
 		}
 	}
 
 	if move.piece.GetType() == King {
-		castlability.CanKingSide = false
-		castlability.CanQueenSide = false
+		castlability.KingSide = false
+		castlability.QueenSide = false
 
 		if move.IsCastle() {
 			board.applyCastle(move)
@@ -140,12 +140,12 @@ func (board *Board) UndoMove() {
 
 	if move.IsCastle() {
 		if toCol == 0 {
-			castling.CanQueenSide = true
+			castling.QueenSide = true
 			board.Set(CreateCoordInt(int(toRow), 1), 0)
 			board.Set(CreateCoordInt(int(toRow), 2), 0)
 			board.Set(CreateCoordInt(int(toRow), 3), 0)
 		} else {
-			castling.CanKingSide = true
+			castling.KingSide = true
 			board.Set(CreateCoordInt(int(toRow), 5), 0)
 			board.Set(CreateCoordInt(int(toRow), 6), 0)
 		}
@@ -240,15 +240,15 @@ type Board struct {
 	// Active player's turn
 	Active Piece
 
-	WhiteCastling Castlability
-	BlackCastling Castlability
+	WhiteCastling Castling
+	BlackCastling Castling
 	EnPassant     *Coordinate
 	HalfMoves     int
 	FullMoves     int
 
 	Moves              []Move
-	WhiteCastleHistory []Castlability
-	BlackCastleHistory []Castlability
+	WhiteCastleHistory []Castling
+	BlackCastleHistory []Castling
 	PreviousEnpassant  *Coordinate
 }
 
@@ -265,7 +265,6 @@ func (board Board) String() string {
 func (board Board) PrettySPrint() string {
 	var builder strings.Builder
 
-	//
 	for row := 0; row < len(board.Board); row++ {
 		for col := 0; col < len(board.Board[row]); col++ {
 			piece := board.Board[row][col]
@@ -307,8 +306,8 @@ func FromFEN(str string) (*Board, error) {
 		return &result, fmt.Errorf("invalid active color %c", records[1][0])
 	}
 
-	result.WhiteCastling = getCastlability(records[2], White)
-	result.BlackCastling = getCastlability(records[2], Black)
+	result.WhiteCastling = formatCastling(records[2], White)
+	result.BlackCastling = formatCastling(records[2], Black)
 
 	if records[3][0] != '-' {
 		coords := CreateCoordAlgebra(records[3])
@@ -347,19 +346,19 @@ func (board Board) ToFEN() string {
 	result.WriteRune(' ')
 	oldLen := result.Len()
 
-	if board.WhiteCastling.CanKingSide {
+	if board.WhiteCastling.KingSide {
 		result.WriteRune('K')
 	}
 
-	if board.WhiteCastling.CanQueenSide {
+	if board.WhiteCastling.QueenSide {
 		result.WriteRune('Q')
 	}
 
-	if board.BlackCastling.CanKingSide {
+	if board.BlackCastling.KingSide {
 		result.WriteRune('k')
 	}
 
-	if board.BlackCastling.CanQueenSide {
+	if board.BlackCastling.QueenSide {
 		result.WriteRune('q')
 	}
 
@@ -384,18 +383,18 @@ func (board Board) ToFEN() string {
 	return result.String()
 }
 
-func getCastlability(str string, color Piece) Castlability {
+func formatCastling(str string, color Piece) Castling {
 	if color == White {
-		return Castlability{
-			CanQueenSide: strings.Contains(str, "Q"),
-			CanKingSide:  strings.Contains(str, "K"),
+		return Castling{
+			QueenSide: strings.Contains(str, "Q"),
+			KingSide:  strings.Contains(str, "K"),
 		}
 	} else if color == Black {
-		return Castlability{
-			CanQueenSide: strings.Contains(str, "q"),
-			CanKingSide:  strings.Contains(str, "k"),
+		return Castling{
+			QueenSide: strings.Contains(str, "q"),
+			KingSide:  strings.Contains(str, "k"),
 		}
 	}
 
-	return Castlability{}
+	return Castling{}
 }
