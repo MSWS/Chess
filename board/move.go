@@ -28,11 +28,8 @@ func (move Move) IsCastle() bool {
 }
 
 func (move Move) String() string {
-	fx, fy := move.from.GetCoords()
-	tx, ty := move.to.GetCoords()
-
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("mv{%v,%v->%v,%v", fx, fy, tx, ty))
+	sb.WriteString(fmt.Sprintf("mv{%v%v", move.from, move.to))
 
 	if move.capture != 0 {
 		sb.WriteString(fmt.Sprintf(",X%v", move.capture))
@@ -99,6 +96,9 @@ func (game Board) GetMoves() []Move {
 			legalMoves := []Move{}
 
 			for _, psuedoMove := range psuedo {
+				if psuedoMove.capture.GetType() == King {
+					continue
+				}
 				game.MakeMove(psuedoMove)
 
 				enemyMoves := game.GetImmediateMoves()

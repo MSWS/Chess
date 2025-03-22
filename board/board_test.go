@@ -91,6 +91,25 @@ func TestMakeMove(t *testing.T) {
 	})
 
 	t.Run("En Passant", func(t *testing.T) {
+		t.Run("Removes Pawn", func(t *testing.T) {
+			board, err := FromFEN("rnbqkbnr/ppp1p1pp/8/3pPp2/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3")
+
+			if err != nil {
+				t.Error(err)
+			}
+
+			board.MakeMove(board.CreateMoveStr("e5", "d6"))
+
+			for _, coord := range []string{"d5", "e5"} {
+				if board.GetStr(coord) != 0 {
+					t.Errorf("board failed to delete pawn at %v, expected %d, got %d", coord, 0, board.GetStr(coord))
+				}
+			}
+
+			if board.GetStr("d6") != White|Pawn {
+				t.Errorf("board failed to place white pawn at d6, expected %c, got %d", White|Pawn, board.GetStr("d6"))
+			}
+		})
 		t.Run("Marks", func(t *testing.T) {
 			t.Run("OnMove", func(t *testing.T) {
 				board, err := FromFEN("rnbqkbnr/ppppp1pp/8/4Pp2/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")
@@ -110,7 +129,6 @@ func TestMakeMove(t *testing.T) {
 					}
 				}
 			})
-
 		})
 		t.Run("Unmarks", func(t *testing.T) {
 			t.Run("OnMove", func(t *testing.T) {
@@ -189,6 +207,28 @@ func TestUndoMove(t *testing.T) {
 	})
 
 	t.Run("En Passant", func(t *testing.T) {
+		t.Run("Restores Pawn", func(t *testing.T) {
+			board, err := FromFEN("rnbqkbnr/ppp1p1pp/8/3pPp2/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3")
+
+			if err != nil {
+				t.Error(err)
+			}
+
+			board.MakeMove(board.CreateMoveStr("e5", "d6"))
+			board.UndoMove()
+
+			if board.GetStr("d6") != 0 {
+				t.Errorf("board failed to delete passanting pawn upon undo, expected %v, got %v", nil, board.GetStr("d6"))
+			}
+
+			if board.GetStr("d5") != Black|Pawn {
+				t.Errorf("board failed to restore black passanted pawn, expected %v, got %v", Black|Pawn, board.GetStr("d5"))
+			}
+
+			if board.GetStr("e5") != White|Pawn {
+				t.Errorf("board failed to restore white passainting pawn, expected %v, got %v", White|Pawn, board.GetStr("e5"))
+			}
+		})
 		t.Run("Marks", func(t *testing.T) {
 			t.Run("FromMove", func(t *testing.T) {
 				board, err := FromFEN("rnbqkbnr/ppppp1pp/8/4Pp2/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")

@@ -87,7 +87,7 @@ func TestGetMoves(t *testing.T) {
 func TestPerfs(t *testing.T) {
 	for name, test := range getPerfData() {
 		t.Run(name, func(t *testing.T) {
-			// t.Parallel()
+			t.Parallel()
 			start, err := FromFEN(test.FEN)
 
 			if err != nil {
@@ -208,7 +208,7 @@ func getPerfData() map[string]struct {
 		knownPerfs []int
 	}{
 		"Starting Position": {
-			knownPerfs: []int{20, 400, 8092, 197281 /*4865609, 119060324, 3195901860*/},
+			knownPerfs: []int{20, 400, 8902, 197281, 4865609 /* 119060324, 3195901860*/},
 			FEN:        START_POSITION,
 		},
 		"Nf3 g5": {
@@ -236,12 +236,16 @@ func getPerfData() map[string]struct {
 			FEN:        "r3k2r/Pppp1ppp/1b3nbN/nP6/BBP1P3/q4N2/Pp1P2PP/R2Q1RK1 w kq - 0 1",
 		},
 		"5": {
-			knownPerfs: []int{44, 1486, 62379},
+			knownPerfs: []int{44, 1486, 62379, 2103487},
 			FEN:        "rnbq1k1r/pp1Pbppp/2p5/8/2B5/8/PPP1NnPP/RNBQK2R w KQ - 1 8",
 		},
 		"6": {
-			knownPerfs: []int{46, 2079, 89890},
+			knownPerfs: []int{46, 2079, 89890, 3894594},
 			FEN:        "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10",
+		},
+		"Gaviota": {
+			knownPerfs: []int{14},
+			FEN:        "1N6/6k1/8/8/7B/8/8/4K3 w - - 19 103",
 		},
 	}
 }

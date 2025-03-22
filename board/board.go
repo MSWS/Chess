@@ -164,15 +164,27 @@ func (board *Board) UndoMove() {
 }
 
 func (board *Board) applyEnPassant(move Move) {
-	board.EnPassant = nil
-	toRow, _ := move.to.GetCoords()
+	toRow, toCol := move.to.GetCoords()
 	fromRow, fromCol := move.from.GetCoords()
 	if move.piece.GetType() != Pawn {
+		board.EnPassant = nil
 		return
 	}
+
+	enemyPiece := Pawn | (^move.piece).GetColor()
+	if board.EnPassant != nil && move.to == *board.EnPassant {
+		// En passant!
+		captured := CreateCoordByte(fromRow, toCol)
+		if board.Get(captured) != enemyPiece {
+			panic(fmt.Sprintf("En Passanted non-enemy piece on %v, got %v, expcted %v", captured, board.Get(captured), enemyPiece))
+		}
+		board.Set(captured, 0)
+		move.capture = enemyPiece
+	}
+	board.EnPassant = nil
+
 	if (toRow == 3 || toRow == 4) && (fromRow == 1 || fromRow == 6) {
 		rowDir := (int(toRow) - int(fromRow)) / 2
-		enemyPiece := Pawn | (^move.piece).GetColor()
 		if fromCol > 0 && board.Get(move.to.Add(0, -1)) == enemyPiece {
 			enpassant := move.from.Add(rowDir, 0)
 			board.EnPassant = &enpassant
