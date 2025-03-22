@@ -85,13 +85,16 @@ func (game Board) GetMoves() []Move {
 	result := []Move{}
 
 	board := game.Board
-	for row := 0; row < len(board); row++ {
-		for col := 0; col < len(board[row]); col++ {
+	pieces := 0
+	for row := 0; row < len(board) && pieces < 16; row++ {
+		for col := 0; col < len(board[row]) && pieces < 16; col++ {
 			piece := board[row][col]
 
 			if piece == 0 || piece.GetColor() != game.Active {
 				continue
 			}
+
+			pieces++
 
 			psuedo := game.getMovesFor(CreateCoordInt(row, col))
 			legalMoves := []Move{}

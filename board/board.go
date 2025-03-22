@@ -139,7 +139,6 @@ func (board *Board) UndoMove() {
 	fromRow, _ := move.from.GetCoords()
 
 	if move.IsCastle() {
-
 		if toCol == 0 {
 			castling.CanQueenSide = true
 			board.Set(CreateCoordInt(int(toRow), 1), 0)
