@@ -359,7 +359,20 @@ func TestFromFEN(t *testing.T) {
 		}
 
 		if !cmp.Equal(startBoard, *resultBoard) {
-			t.Errorf("Boards are not equal, expected %v, got %v", startBoard, *resultBoard)
+			t.Errorf("boards are not equal, expected %v, got %v", startBoard, *resultBoard)
+		}
+	})
+
+	t.Run("Start Position - Black", func(t *testing.T) {
+		start := getStartBoard()
+		board, err := FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if !cmp.Equal(start, board.Board) {
+			t.Errorf("boards are not equal, expected %v, got %v", start, board)
 		}
 	})
 
