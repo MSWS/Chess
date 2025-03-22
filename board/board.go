@@ -262,7 +262,7 @@ func (board Board) String() string {
 	return fmt.Sprintf("Board{%s}", board.ToFEN())
 }
 
-func (board Board) PrettySPrint() string {
+func (board Board) PrettyPrint() string {
 	var builder strings.Builder
 
 	for row := 0; row < len(board.Board); row++ {
