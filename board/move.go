@@ -10,6 +10,7 @@ type Move struct {
 	piece       Piece
 	capture     Piece
 	promotionTo Piece
+	isEnPassant bool
 }
 
 func (move Move) IsCastle() bool {
@@ -221,7 +222,9 @@ func (game Board) getPawnMoves(coord Coordinate) []Move {
 		if int(enRow) == int(row)+direction {
 			diff := int(enCol) - int(col)
 			if diff == -1 || diff == 1 {
-				moves = append(moves, game.CreateMove(coord, *game.EnPassant))
+				move := game.CreateMove(coord, *game.EnPassant)
+				move.isEnPassant = true
+				moves = append(moves, move)
 			}
 		}
 	}

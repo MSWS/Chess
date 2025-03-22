@@ -1,6 +1,8 @@
 package board
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Piece byte
 
@@ -15,6 +17,10 @@ const (
 	Queen
 	King
 )
+
+func (piece Piece) String() string {
+	return string(piece.GetRune())
+}
 
 func GetPiece(c rune) (Piece, error) {
 	white := true

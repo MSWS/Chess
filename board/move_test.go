@@ -87,7 +87,7 @@ func TestGetMoves(t *testing.T) {
 func TestPerfs(t *testing.T) {
 	for name, test := range getPerfData() {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+			// t.Parallel()
 			start, err := FromFEN(test.FEN)
 
 			if err != nil {

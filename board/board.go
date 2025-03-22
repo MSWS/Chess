@@ -76,7 +76,7 @@ func (board Board) Move(from Coordinate, to Coordinate) {
 	board.Board[fromRow][fromCol] = 0
 }
 
-func (board *Board) MakeMove(move Move) Move {
+func (board *Board) MakeMove(move Move) {
 	board.WhiteCastleHistory = append(board.WhiteCastleHistory, board.WhiteCastling)
 	board.BlackCastleHistory = append(board.BlackCastleHistory, board.BlackCastling)
 	board.PreviousEnpassant = board.EnPassant
@@ -95,7 +95,7 @@ func (board *Board) MakeMove(move Move) Move {
 			board.Set(move.to, move.promotionTo|move.piece.GetColor())
 		}
 
-		board.applyEnPassant(move)
+		board.applyEnPassant(&move)
 	}
 
 	castlability := &board.WhiteCastling
@@ -122,7 +122,7 @@ func (board *Board) MakeMove(move Move) Move {
 
 	board.Active = (^board.Active).GetColor()
 	board.Moves = append(board.Moves, move)
-	return move
+	// return move
 }
 
 func (board *Board) UndoMove() {
@@ -135,8 +135,10 @@ func (board *Board) UndoMove() {
 		castling = &board.BlackCastling
 	}
 
+	toRow, toCol := move.to.GetCoords()
+	fromRow, _ := move.from.GetCoords()
+
 	if move.IsCastle() {
-		toRow, toCol := move.to.GetCoords()
 
 		if toCol == 0 {
 			castling.CanQueenSide = true
@@ -150,12 +152,15 @@ func (board *Board) UndoMove() {
 		}
 	}
 
+	if move.isEnPassant {
+		board.Set(move.to, 0)
+		captured := CreateCoordByte(fromRow, toCol)
+		board.Set(captured, move.capture)
+	}
+
 	board.Active = (^board.Active).GetColor()
 	board.EnPassant = board.PreviousEnpassant
 	board.Moves = board.Moves[0 : len(board.Moves)-1]
-	if len(board.Moves) > 0 {
-		board.applyEnPassant(board.Moves[len(board.Moves)-1])
-	}
 	board.WhiteCastling = board.WhiteCastleHistory[len(board.WhiteCastleHistory)-1]
 	board.BlackCastling = board.BlackCastleHistory[len(board.BlackCastleHistory)-1]
 
@@ -163,7 +168,7 @@ func (board *Board) UndoMove() {
 	board.BlackCastleHistory = board.BlackCastleHistory[0 : len(board.BlackCastleHistory)-1]
 }
 
-func (board *Board) applyEnPassant(move Move) {
+func (board *Board) applyEnPassant(move *Move) {
 	toRow, toCol := move.to.GetCoords()
 	fromRow, fromCol := move.from.GetCoords()
 	if move.piece.GetType() != Pawn {
@@ -171,15 +176,16 @@ func (board *Board) applyEnPassant(move Move) {
 		return
 	}
 
-	enemyPiece := Pawn | (^move.piece).GetColor()
+	enemyPiece := Pawn | ((^move.piece).GetColor())
 	if board.EnPassant != nil && move.to == *board.EnPassant {
 		// En passant!
 		captured := CreateCoordByte(fromRow, toCol)
 		if board.Get(captured) != enemyPiece {
-			panic(fmt.Sprintf("En Passanted non-enemy piece on %v, got %v, expcted %v", captured, board.Get(captured), enemyPiece))
+			panic(fmt.Sprintf("En Passanted non-enemy piece on %v, got %v, expected %v", captured, board.Get(captured), enemyPiece))
 		}
 		board.Set(captured, 0)
 		move.capture = enemyPiece
+		move.isEnPassant = true
 	}
 	board.EnPassant = nil
 

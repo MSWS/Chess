@@ -218,7 +218,7 @@ func TestUndoMove(t *testing.T) {
 			board.UndoMove()
 
 			if board.GetStr("d6") != 0 {
-				t.Errorf("board failed to delete passanting pawn upon undo, expected %v, got %v", nil, board.GetStr("d6"))
+				t.Errorf("board failed to delete passanting pawn upon undo, expected %v, got %v", 0, board.GetStr("d6"))
 			}
 
 			if board.GetStr("d5") != Black|Pawn {
