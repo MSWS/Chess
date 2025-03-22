@@ -44,7 +44,7 @@ func (move Move) String() string {
 	return sb.String()
 }
 
-func (board Board) CreateMove(from Coordinate, to Coordinate) Move {
+func (board Game) CreateMove(from Coordinate, to Coordinate) Move {
 	result := Move{
 		from:    from,
 		to:      to,
@@ -55,14 +55,14 @@ func (board Board) CreateMove(from Coordinate, to Coordinate) Move {
 	return result
 }
 
-func (board Board) CreateMoveStr(from string, to string) Move {
+func (board Game) CreateMoveStr(from string, to string) Move {
 	return board.CreateMove(
 		CreateCoordAlgebra(from),
 		CreateCoordAlgebra(to),
 	)
 }
 
-func (game Board) GetImmediateMoves() []Move {
+func (game Game) GetImmediateMoves() []Move {
 	result := []Move{}
 
 	board := game.Board
@@ -81,7 +81,7 @@ func (game Board) GetImmediateMoves() []Move {
 	return result
 }
 
-func (game Board) GetMoves() []Move {
+func (game Game) GetMoves() []Move {
 	result := []Move{}
 
 	board := game.Board
@@ -148,7 +148,7 @@ func (game Board) GetMoves() []Move {
 	return result
 }
 
-func (game Board) getMovesFor(coord Coordinate) []Move {
+func (game Game) getMovesFor(coord Coordinate) []Move {
 	piece := game.Get(coord)
 
 	switch piece.GetType() {
@@ -169,7 +169,7 @@ func (game Board) getMovesFor(coord Coordinate) []Move {
 	}
 }
 
-func (game Board) getPawnMoves(coord Coordinate) []Move {
+func (game Game) getPawnMoves(coord Coordinate) []Move {
 	piece := game.Get(coord)
 	moves := []Move{}
 	direction := 1
@@ -235,7 +235,7 @@ func (game Board) getPawnMoves(coord Coordinate) []Move {
 	return moves
 }
 
-func (game Board) getKnightMoves(coord Coordinate) []Move {
+func (game Game) getKnightMoves(coord Coordinate) []Move {
 	moves := []Move{}
 
 	offsets := [][]int{{-2, 1}, {-1, 2}, {1, 2}, {2, 1}, {2, -1}, {1, -2}, {-1, -2}, {-2, -1}}
@@ -257,19 +257,19 @@ func (game Board) getKnightMoves(coord Coordinate) []Move {
 	return moves
 }
 
-func (game Board) getBishopMoves(coord Coordinate) []Move {
+func (game Game) getBishopMoves(coord Coordinate) []Move {
 	return game.getSlidingMovesOf(coord, [][]int{{-1, 1}, {1, 1}, {1, -1}, {-1, -1}})
 }
 
-func (game Board) getRookMoves(coord Coordinate) []Move {
+func (game Game) getRookMoves(coord Coordinate) []Move {
 	return game.getSlidingMovesOf(coord, [][]int{{-1, 0}, {1, 0}, {0, -1}, {0, 1}})
 }
 
-func (game Board) getQueenMoves(coord Coordinate) []Move {
+func (game Game) getQueenMoves(coord Coordinate) []Move {
 	return append(game.getBishopMoves(coord), game.getRookMoves(coord)...)
 }
 
-func (game Board) getKingMoves(coord Coordinate) []Move {
+func (game Game) getKingMoves(coord Coordinate) []Move {
 	moves := []Move{}
 
 	offsets := [][]int{{-1, 1}, {0, 1}, {1, 1}, {1, 0}, {1, -1}, {0, -1}, {-1, -1}, {-1, 0}}
@@ -291,7 +291,7 @@ func (game Board) getKingMoves(coord Coordinate) []Move {
 	return append(moves, game.getCastleMoves(coord)...)
 }
 
-func (game Board) getCastleMoves(coord Coordinate) []Move {
+func (game Game) getCastleMoves(coord Coordinate) []Move {
 	moves := []Move{}
 	castling := game.WhiteCastling
 	castleRow := 0
@@ -319,7 +319,7 @@ func (game Board) getCastleMoves(coord Coordinate) []Move {
 	return moves
 }
 
-func (game Board) getSlidingMovesOf(coord Coordinate, offsets [][]int) []Move {
+func (game Game) getSlidingMovesOf(coord Coordinate, offsets [][]int) []Move {
 	moves := []Move{}
 
 	for _, offset := range offsets {
@@ -329,7 +329,7 @@ func (game Board) getSlidingMovesOf(coord Coordinate, offsets [][]int) []Move {
 	return moves
 }
 
-func (game Board) getSlidingMoves(coord Coordinate, offsetX int, offsetY int) []Move {
+func (game Game) getSlidingMoves(coord Coordinate, offsetX int, offsetY int) []Move {
 	moves := []Move{}
 
 	current := coord
@@ -375,13 +375,13 @@ func filter[T any](arr []T, predicate func(T) bool) []T {
 	return ret
 }
 
-func (board Board) filterEnemies(moves []Move) []Move {
+func (board Game) filterEnemies(moves []Move) []Move {
 	return filter(moves, func(m Move) bool {
 		return m.capture == 0 || m.piece.GetColor() == m.capture.GetColor()
 	})
 }
 
-func (board Board) filterAllies(moves []Move) []Move {
+func (board Game) filterAllies(moves []Move) []Move {
 	return filter(moves, func(m Move) bool {
 		return m.capture == 0 || m.piece.GetColor() != m.capture.GetColor()
 	})

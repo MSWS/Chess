@@ -570,7 +570,7 @@ func TestFromFEN(t *testing.T) {
 
 		coords := Coordinate(5<<4 + 2)
 
-		expectedBoard := &Board{
+		expectedBoard := &Game{
 			Board: &[8][8]Piece{
 				startRow,
 				{Pawn, Pawn, Pawn, Pawn, 0, Pawn, Pawn, Pawn},
@@ -607,7 +607,7 @@ func TestFromFEN(t *testing.T) {
 
 func TestToFEN(t *testing.T) {
 	tests := map[string]struct {
-		input    Board
+		input    Game
 		expected string
 	}{
 		"Start Position": {
@@ -639,8 +639,8 @@ func markRowColor(row *[8]Piece, color Piece) {
 	}
 }
 
-func getStartGame() Board {
-	return Board{
+func getStartGame() Game {
+	return Game{
 		Board:         getStartBoard(),
 		Active:        White,
 		WhiteCastling: Castling{true, true},

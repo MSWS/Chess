@@ -129,7 +129,7 @@ func TestIsCastle(t *testing.T) {
 	})
 }
 
-func (game Board) perft(depth int) int {
+func (game Game) perft(depth int) int {
 	var nodes int
 
 	moves := game.GetMoves()
@@ -180,7 +180,7 @@ func TestCreateMove(t *testing.T) {
 			{},
 			{Black | Rook},
 		}
-		board := Board{
+		board := Game{
 			Board: &baseRooks,
 		}
 

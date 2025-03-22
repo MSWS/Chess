@@ -26,18 +26,4 @@ jobs:
       - name: Find and process directories with go.mod
         run: |
           go build
-          # Find all directories with go.mod in the immediate subdirectories
-          for dir in */; do
-            echo "Processing $dir"
-            cd "$dir"
-
-            # Check if _test.go files exist
-            if ls *_test.go >/dev/null 2>&1; then
-              echo "Running go test in $dir"
-              go test -v -cover
-            else
-              echo "No test files in $dir"
-            fi
-
-            cd - >/dev/null
-          done
+          go test -v -cover ./...

@@ -55,28 +55,28 @@ type Castling struct {
 	KingSide  bool
 }
 
-func (board Board) Get(coord Coordinate) Piece {
+func (board Game) Get(coord Coordinate) Piece {
 	row, col := coord.GetCoords()
 	return board.Board[row][col]
 }
 
-func (board Board) GetStr(coord string) Piece {
+func (board Game) GetStr(coord string) Piece {
 	return board.Get(CreateCoordAlgebra(coord))
 }
 
-func (board Board) Set(coord Coordinate, piece Piece) {
+func (board Game) Set(coord Coordinate, piece Piece) {
 	row, col := coord.GetCoords()
 	board.Board[row][col] = piece
 }
 
-func (board Board) Move(from Coordinate, to Coordinate) {
+func (board Game) Move(from Coordinate, to Coordinate) {
 	fromRow, fromCol := from.GetCoords()
 	toRow, toCol := to.GetCoords()
 	board.Board[toRow][toCol] = board.Board[fromRow][fromCol]
 	board.Board[fromRow][fromCol] = 0
 }
 
-func (board *Board) MakeMove(move Move) {
+func (board *Game) MakeMove(move Move) {
 	board.WhiteCastleHistory = append(board.WhiteCastleHistory, board.WhiteCastling)
 	board.BlackCastleHistory = append(board.BlackCastleHistory, board.BlackCastling)
 	board.PreviousEnpassant = board.EnPassant
@@ -125,7 +125,7 @@ func (board *Board) MakeMove(move Move) {
 	// return move
 }
 
-func (board *Board) UndoMove() {
+func (board *Game) UndoMove() {
 	move := board.Moves[len(board.Moves)-1]
 	board.Set(move.to, move.capture)
 	board.Set(move.from, move.piece)
@@ -169,7 +169,7 @@ func (board *Board) UndoMove() {
 	board.BlackCastleHistory = board.BlackCastleHistory[0 : len(board.BlackCastleHistory)-1]
 }
 
-func (board *Board) applyEnPassant(move *Move) {
+func (board *Game) applyEnPassant(move *Move) {
 	toRow, toCol := move.to.GetCoords()
 	fromRow, fromCol := move.from.GetCoords()
 	if move.piece.GetType() != Pawn {
@@ -202,7 +202,7 @@ func (board *Board) applyEnPassant(move *Move) {
 	}
 }
 
-func (board Board) applyCastle(move Move) {
+func (board Game) applyCastle(move Move) {
 	kingSquare := 2
 	rookSquare := 3
 	castleRow, castleCol := move.to.GetCoords()
@@ -217,7 +217,7 @@ func (board Board) applyCastle(move Move) {
 	board.Set(CreateCoordByte(castleRow, byte(rookSquare)), move.capture)
 }
 
-func (board *Board) MakeMoveStr(str string) {
+func (board *Game) MakeMoveStr(str string) {
 	switch str {
 	case "e4":
 		board.MakeMove(board.CreateMoveStr("e2", "e4"))
@@ -228,10 +228,10 @@ func (board *Board) MakeMoveStr(str string) {
 	}
 }
 
-// A board that represents a given game.
+// A game that represents a given game.
 // Represents all data that is stored in a FEN string.
-// i.e. given a Board, you can find the FEN, and vice-versa
-type Board struct {
+// i.e. given a Game, you can find the FEN, and vice-versa
+type Game struct {
 	// The game's pieces, in [row][col]
 	// with the first row, first column being the bottom
 	// left of the board from white's perspective (i.e. a1)
@@ -242,9 +242,15 @@ type Board struct {
 
 	WhiteCastling Castling
 	BlackCastling Castling
-	EnPassant     *Coordinate
-	HalfMoves     int
-	FullMoves     int
+
+	// The square that can be captured en passant
+	EnPassant *Coordinate
+
+	// Moves both players have made since last capture or pawn move
+	HalfMoves int
+
+	// Number of full moves (incremented after black moves)
+	FullMoves int
 
 	Moves              []Move
 	WhiteCastleHistory []Castling
@@ -252,17 +258,15 @@ type Board struct {
 	PreviousEnpassant  *Coordinate
 }
 
-type Bitboard uint64
-
-func (board Board) Equal(other Board) bool {
+func (board Game) Equal(other Game) bool {
 	return board.ToFEN() == other.ToFEN()
 }
 
-func (board Board) String() string {
+func (board Game) String() string {
 	return fmt.Sprintf("Board{%s}", board.ToFEN())
 }
 
-func (board Board) PrettyPrint() string {
+func (board Game) PrettyPrint() string {
 	var builder strings.Builder
 
 	for row := 0; row < len(board.Board); row++ {
@@ -280,8 +284,8 @@ func (board Board) PrettyPrint() string {
 	return builder.String()
 }
 
-func FromFEN(str string) (*Board, error) {
-	result := Board{}
+func FromFEN(str string) (*Game, error) {
+	result := Game{}
 
 	records := strings.Split(strings.TrimSpace(str), " ")
 
@@ -333,7 +337,7 @@ func FromFEN(str string) (*Board, error) {
 	return &result, nil
 }
 
-func (board Board) ToFEN() string {
+func (board Game) ToFEN() string {
 	var result strings.Builder
 	result.WriteString(GeneratePieceString(*board.Board))
 	result.WriteRune(' ')
