@@ -22,6 +22,11 @@ func (coord Coordinate) GetCoords() (byte, byte) {
 	return byte(coord) >> 4, byte(coord) & 0b1111
 }
 
+func (coord Coordinate) Add(row int, col int) Coordinate {
+	thisRow, thisCol := coord.GetCoords()
+	return CreateCoordInt(int(thisRow)+row, int(thisCol)+col)
+}
+
 func CreateCoordInt(row int, col int) Coordinate {
 	return CreateCoordByte(byte(row), byte(col))
 }
@@ -74,18 +79,23 @@ func (board Board) Move(from Coordinate, to Coordinate) {
 func (board *Board) MakeMove(move Move) Move {
 	board.WhiteCastleHistory = append(board.WhiteCastleHistory, board.WhiteCastling)
 	board.BlackCastleHistory = append(board.BlackCastleHistory, board.BlackCastling)
+	board.PreviousEnpassant = board.EnPassant
 	captured := board.Get(move.to)
 	move.capture = captured
 
 	board.Move(move.from, move.to)
+	_, fromCol := move.from.GetCoords()
 
-	row, _ := move.to.GetCoords()
-
-	if move.piece.GetType() == Pawn && (row == 0 || row == 7) {
-		if move.promotionTo == 0 {
-			move.promotionTo = Queen | move.piece.GetColor()
+	if move.piece.GetType() == Pawn {
+		toRow, _ := move.to.GetCoords()
+		if toRow == 0 || toRow == 7 { // Promotions
+			if move.promotionTo == 0 {
+				move.promotionTo = Queen | move.piece.GetColor()
+			}
+			board.Set(move.to, move.promotionTo|move.piece.GetColor())
 		}
-		board.Set(move.to, move.promotionTo|move.piece.GetColor())
+
+		board.applyEnPassant(move)
 	}
 
 	castlability := &board.WhiteCastling
@@ -94,10 +104,9 @@ func (board *Board) MakeMove(move Move) Move {
 	}
 
 	if move.piece.GetType() == Rook {
-		_, col := move.from.GetCoords()
-		if col == 0 {
+		if fromCol == 0 {
 			castlability.CanQueenSide = false
-		} else if col == 7 {
+		} else if fromCol == 7 {
 			castlability.CanKingSide = false
 		}
 	}
@@ -142,12 +151,36 @@ func (board *Board) UndoMove() {
 	}
 
 	board.Active = (^board.Active).GetColor()
+	board.EnPassant = board.PreviousEnpassant
 	board.Moves = board.Moves[0 : len(board.Moves)-1]
+	if len(board.Moves) > 0 {
+		board.applyEnPassant(board.Moves[len(board.Moves)-1])
+	}
 	board.WhiteCastling = board.WhiteCastleHistory[len(board.WhiteCastleHistory)-1]
 	board.BlackCastling = board.BlackCastleHistory[len(board.BlackCastleHistory)-1]
 
 	board.WhiteCastleHistory = board.WhiteCastleHistory[0 : len(board.WhiteCastleHistory)-1]
 	board.BlackCastleHistory = board.BlackCastleHistory[0 : len(board.BlackCastleHistory)-1]
+}
+
+func (board *Board) applyEnPassant(move Move) {
+	board.EnPassant = nil
+	toRow, _ := move.to.GetCoords()
+	fromRow, fromCol := move.from.GetCoords()
+	if move.piece.GetType() != Pawn {
+		return
+	}
+	if (toRow == 3 || toRow == 4) && (fromRow == 1 || fromRow == 6) {
+		rowDir := (int(toRow) - int(fromRow)) / 2
+		enemyPiece := Pawn | (^move.piece).GetColor()
+		if fromCol > 0 && board.Get(move.to.Add(0, -1)) == enemyPiece {
+			enpassant := move.from.Add(rowDir, 0)
+			board.EnPassant = &enpassant
+		} else if fromCol < 7 && board.Get(move.to.Add(0, 1)) == enemyPiece {
+			enpassant := move.from.Add(rowDir, 0)
+			board.EnPassant = &enpassant
+		}
+	}
 }
 
 func (board Board) applyCastle(move Move) {
@@ -197,6 +230,7 @@ type Board struct {
 	Moves              []Move
 	WhiteCastleHistory []Castlability
 	BlackCastleHistory []Castlability
+	PreviousEnpassant  *Coordinate
 }
 
 type Bitboard uint64

@@ -89,6 +89,61 @@ func TestMakeMove(t *testing.T) {
 			t.Errorf("board did not properly promote pawn to queen, got %c", start.Get(move.to).GetRune())
 		}
 	})
+
+	t.Run("En Passant", func(t *testing.T) {
+		t.Run("Marks", func(t *testing.T) {
+			t.Run("OnMove", func(t *testing.T) {
+				board, err := FromFEN("rnbqkbnr/ppppp1pp/8/4Pp2/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")
+
+				if err != nil {
+					t.Error(err)
+				}
+
+				board.MakeMove(board.CreateMoveStr("d7", "d5"))
+
+				expected := CreateCoordAlgebra("d6")
+				if board.EnPassant == nil || *board.EnPassant != expected {
+					if board.EnPassant == nil {
+						t.Errorf("board failed to mark en passant, expected %v, got %v", expected, nil)
+					} else {
+						t.Errorf("board failed to mark en passant, expected %v, got %v", expected, *board.EnPassant)
+					}
+				}
+			})
+
+		})
+		t.Run("Unmarks", func(t *testing.T) {
+			t.Run("OnMove", func(t *testing.T) {
+				board, err := FromFEN("rnbqkbnr/ppppp1pp/8/4Pp2/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")
+
+				if err != nil {
+					t.Error(err)
+				}
+
+				board.MakeMove(board.CreateMoveStr("d7", "d5"))
+				board.MakeMove(board.CreateMoveStr("e5", "e6"))
+
+				if board.EnPassant != nil {
+					t.Errorf("board failed to unmark en passant, expected %v, got %v", nil, *board.EnPassant)
+				}
+			})
+
+			t.Run("OnUndo", func(t *testing.T) {
+				board, err := FromFEN("rnbqkbnr/ppppp1pp/8/4Pp2/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")
+
+				if err != nil {
+					t.Error(err)
+				}
+
+				board.MakeMove(board.CreateMoveStr("d7", "d5"))
+				board.UndoMove()
+
+				if board.EnPassant != nil {
+					t.Errorf("board failed to unmark en passant, expected %v, got %v", nil, *board.EnPassant)
+				}
+			})
+		})
+	})
 }
 
 func TestUndoMove(t *testing.T) {
@@ -131,6 +186,59 @@ func TestUndoMove(t *testing.T) {
 		if !castlability.CanKingSide || !castlability.CanQueenSide {
 			t.Errorf("board did not update white castlability after undoing (%v)", castlability)
 		}
+	})
+
+	t.Run("En Passant", func(t *testing.T) {
+		t.Run("Marks", func(t *testing.T) {
+			t.Run("FromMove", func(t *testing.T) {
+				board, err := FromFEN("rnbqkbnr/ppppp1pp/8/4Pp2/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")
+
+				if err != nil {
+					t.Error(err)
+				}
+
+				board.MakeMove(board.CreateMoveStr("d7", "d5"))
+				// En Passant Available
+				board.MakeMove(board.CreateMoveStr("e5", "e6"))
+				// En Passant Gone
+
+				board.UndoMove()
+				// En Passant Re-Available
+
+				expected := CreateCoordAlgebra("d6")
+				if board.EnPassant == nil || *board.EnPassant != expected {
+					if board.EnPassant == nil {
+						t.Errorf("board failed to re-mark en passant, expected %v, got %v", expected, nil)
+					} else {
+						t.Errorf("board failed to re-mark en passant, expected %v, got %v", expected, board.EnPassant)
+					}
+				}
+			})
+
+			t.Run("FromFEN", func(t *testing.T) {
+				board, err := FromFEN("rnbqkbnr/ppp1p1pp/8/3pPp2/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3")
+				// En Passant Available
+
+				if err != nil {
+					t.Error(err)
+				}
+
+				board.MakeMove(board.CreateMoveStr("e5", "e6"))
+				// En Passant Gone
+
+				board.UndoMove()
+				// En Passant Re-Available
+
+				expected := CreateCoordAlgebra("d6")
+				if board.EnPassant == nil || *board.EnPassant != expected {
+					if board.EnPassant == nil {
+						t.Errorf("board failed to re-mark en passant, expected %v, got %v", expected, nil)
+					} else {
+						t.Errorf("board failed to re-mark en passant, expected %v, got %v", expected, board.EnPassant)
+					}
+				}
+			})
+		})
 	})
 }
 

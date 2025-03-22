@@ -173,6 +173,7 @@ func (game Board) getPawnMoves(coord Coordinate) []Move {
 		direction = -1
 	}
 
+	// Basic pushing
 	row, col := coord.GetCoords()
 	if piece.GetColor() == White {
 		if row == 1 && game.Board[row+1][col] == 0 {
@@ -188,6 +189,7 @@ func (game Board) getPawnMoves(coord Coordinate) []Move {
 		return m.capture == 0
 	})
 
+	// Capturing
 	for _, dx := range []int{-1, 1} {
 		if col+byte(dx) > 7 {
 			continue
@@ -198,6 +200,7 @@ func (game Board) getPawnMoves(coord Coordinate) []Move {
 		}
 	}
 
+	// Promoting
 	for _, move := range moves {
 		row, _ := move.to.GetCoords()
 
@@ -206,6 +209,19 @@ func (game Board) getPawnMoves(coord Coordinate) []Move {
 			for _, piece := range []Piece{Knight, Bishop, Rook} {
 				move.promotionTo = piece | move.piece.GetColor()
 				moves = append(moves, move)
+			}
+		}
+	}
+
+	// En Passant
+
+	if game.EnPassant != nil {
+		enRow, enCol := (*game.EnPassant).GetCoords()
+
+		if int(enRow) == int(row)+direction {
+			diff := int(enCol) - int(col)
+			if diff == -1 || diff == 1 {
+				moves = append(moves, game.CreateMove(coord, *game.EnPassant))
 			}
 		}
 	}

@@ -69,12 +69,25 @@ func TestGetMoves(t *testing.T) {
 			})
 		}
 	})
+
+	t.Run("En Passant", func(t *testing.T) {
+		board, err := FromFEN("rnbqkbnr/ppp1p1pp/8/3pPp2/8/8/PPPP1PPP/RNBQKBNR w KQkq f6 0 3")
+		if err != nil {
+			t.Error(err)
+		}
+
+		moves := board.GetMoves()
+
+		if len(moves) != 31 {
+			t.Errorf("invalid number of legal moves, expected %d, got %d", 31, len(moves))
+		}
+	})
 }
 
 func TestPerfs(t *testing.T) {
 	for name, test := range getPerfData() {
 		t.Run(name, func(t *testing.T) {
-			t.Parallel()
+			// t.Parallel()
 			start, err := FromFEN(test.FEN)
 
 			if err != nil {
@@ -213,6 +226,10 @@ func getPerfData() map[string]struct {
 		"3": {
 			knownPerfs: []int{14, 191, 2812, 43238},
 			FEN:        "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
+		},
+		"3 g3+": {
+			knownPerfs: []int{4},
+			FEN:        "8/2p5/3p4/KP5r/1R3p1k/6P1/4P3/8 b - - 0 1",
 		},
 		"4": {
 			knownPerfs: []int{6, 264, 9467},
