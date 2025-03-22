@@ -265,6 +265,7 @@ func (board Board) String() string {
 func (board Board) PrettySPrint() string {
 	var builder strings.Builder
 
+	//
 	for row := 0; row < len(board.Board); row++ {
 		for col := 0; col < len(board.Board[row]); col++ {
 			piece := board.Board[row][col]
