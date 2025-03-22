@@ -69,6 +69,8 @@ func (piece Piece) GetRune() rune {
 
 	var result rune
 	switch p {
+	case 0:
+		result = '_'
 	case King:
 		result = 'K'
 	case Queen:
@@ -82,7 +84,7 @@ func (piece Piece) GetRune() rune {
 	case Pawn:
 		result = 'P'
 	default:
-		panic(fmt.Errorf("failed to get rune for piece: %x", piece))
+		panic(fmt.Errorf("failed to get rune for piece: %b", piece))
 	}
 
 	if color == Black {
