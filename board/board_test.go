@@ -161,37 +161,6 @@ func TestMakeMove(t *testing.T) {
 				}
 			})
 
-			t.Run("OnTwoUndo", func(t *testing.T) {
-				board, err := FromFEN("rnbqkbnr/ppppp1pp/8/4Pp2/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")
-
-				if err != nil {
-					t.Error(err)
-				}
-
-				board.MakeMove(board.CreateMoveStr("d7", "d5"))
-				board.MakeMove(board.CreateMoveStr("e5", "d6"))
-				board.MakeMove(board.CreateMoveStr("c7", "d6"))
-
-				if board.GetStr("d6") != Black|Pawn {
-					t.Errorf("board failed to properly capture, expected %v, got %v", Black|Pawn, board.GetStr("d6"))
-				}
-
-				if board.GetStr("c7") != 0 {
-					t.Errorf("board failed to properly move black pawn, expected %v, got %v", nil, board.GetStr("c7"))
-				}
-
-				board.UndoMove()
-
-				if board.GetStr("d6") != White|Pawn {
-					t.Errorf("board failed to properly capture, expected %v, got %v", White|Pawn, board.GetStr("d6"))
-				}
-
-				board.UndoMove()
-
-				if board.EnPassant != nil {
-					t.Errorf("board failed to unmark en passant, expected %v, got %v", nil, *board.EnPassant)
-				}
-			})
 		})
 	})
 }
@@ -307,6 +276,46 @@ func TestUndoMove(t *testing.T) {
 						t.Errorf("board failed to re-mark en passant, expected %v, got %v", expected, nil)
 					} else {
 						t.Errorf("board failed to re-mark en passant, expected %v, got %v", expected, board.EnPassant)
+					}
+				}
+			})
+
+			t.Run("OnTwoUndo", func(t *testing.T) {
+				board, err := FromFEN("rnbqkbnr/ppppp1pp/8/4Pp2/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 2")
+
+				if err != nil {
+					t.Error(err)
+				}
+
+				board.MakeMove(board.CreateMoveStr("d7", "d5"))
+				board.MakeMove(board.CreateMoveStr("e5", "d6"))
+				board.MakeMove(board.CreateMoveStr("c7", "d6"))
+
+				if board.GetStr("d6") != Black|Pawn {
+					t.Errorf("board failed to properly capture, expected %v, got %v", Black|Pawn, board.GetStr("d6"))
+				}
+
+				if board.GetStr("c7") != 0 {
+					t.Errorf("board failed to properly move black pawn, expected %v, got %v", nil, board.GetStr("c7"))
+				}
+
+				board.UndoMove()
+
+				if board.GetStr("d6") != White|Pawn {
+					t.Errorf("board failed to properly capture, expected %v, got %v", White|Pawn, board.GetStr("d6"))
+				}
+
+				board.UndoMove()
+
+				expected := CreateCoordAlgebra("d6")
+
+				t.Log(board.ToFEN())
+
+				if board.EnPassant == nil || *board.EnPassant != expected {
+					if board.EnPassant == nil {
+						t.Errorf("board failed to restore en passant, expected %v, got %v", expected, nil)
+					} else {
+						t.Errorf("board failed to restore en passant, expected %v, got %v", expected, *board.EnPassant)
 					}
 				}
 			})

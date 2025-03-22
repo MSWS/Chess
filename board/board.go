@@ -156,10 +156,12 @@ func (board *Board) UndoMove() {
 		board.Set(move.to, 0)
 		captured := CreateCoordByte(fromRow, toCol)
 		board.Set(captured, move.capture)
+		board.EnPassant = &move.to
+	} else {
+		board.EnPassant = board.PreviousEnpassant
 	}
 
 	board.Active = (^board.Active).GetColor()
-	board.EnPassant = board.PreviousEnpassant
 	board.Moves = board.Moves[0 : len(board.Moves)-1]
 	board.WhiteCastling = board.WhiteCastleHistory[len(board.WhiteCastleHistory)-1]
 	board.BlackCastling = board.BlackCastleHistory[len(board.BlackCastleHistory)-1]
