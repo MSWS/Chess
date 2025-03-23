@@ -165,6 +165,55 @@ func TestMakeMove(t *testing.T) {
 	})
 }
 
+func TestCreateMoveAlgebra(t *testing.T) {
+	t.Run("Starting Position", func(t *testing.T) {
+		type testEntry struct {
+			from, to string
+			move     string
+		}
+		data := []testEntry{
+			{from: "b1", to: "a3", move: "Na3"},
+			{from: "b1", to: "c3", move: "Nc3"},
+			{from: "g1", to: "f3", move: "Nf3"},
+			{from: "g1", to: "h3", move: "Nh3"},
+		}
+
+		for col := 0; col < 8; col++ {
+			for row := 2; row < 4; row++ {
+				from := CreateCoordInt(1, col)
+				to := CreateCoordInt(row, col)
+				dat := testEntry{
+					from: from.GetAlgebra(),
+					to:   to.GetAlgebra(),
+					move: to.GetAlgebra(),
+				}
+				data = append(data, dat)
+			}
+		}
+
+		for _, test := range data {
+			t.Run(test.move, func(t *testing.T) {
+				defer func() {
+					if r := recover(); r != nil {
+						t.Errorf("unexpected panic: %v", r)
+					}
+				}()
+				start := getStartGame()
+
+				move := start.CreateMoveAlgebra(test.move)
+
+				if move.from.GetAlgebra() != test.from {
+					t.Errorf("expected from to be %v, got %v", test.from, move.from.GetAlgebra())
+				}
+
+				if move.to.GetAlgebra() != test.to {
+					t.Errorf("expected to to be %v, got %v", test.to, move.to.GetAlgebra())
+				}
+			})
+		}
+	})
+}
+
 func TestUndoMove(t *testing.T) {
 	t.Run("ChangesTurn", func(t *testing.T) {
 		start := getStartGame()
@@ -319,24 +368,6 @@ func TestUndoMove(t *testing.T) {
 			})
 		})
 	})
-}
-
-func TestMakeMoveStr(t *testing.T) {
-	start := getStartGame()
-	start.MakeMoveStr("e4")
-	residual := start.GetStr("e2")
-
-	if residual != 0 {
-		t.Errorf("board did not properly move pawn, expected 0, got %x",
-			residual)
-	}
-
-	residual = start.GetStr("e4")
-
-	if residual != White|Pawn {
-		t.Errorf("board did not properly move pawn, expected %x, got %x",
-			White|Pawn, residual)
-	}
 }
 
 func TestGetCoords(t *testing.T) {

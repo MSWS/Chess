@@ -62,6 +62,26 @@ func (board Game) CreateMoveStr(from string, to string) Move {
 	)
 }
 
+func (board Game) CreateMoveAlgebra(algebra string) Move {
+	if len(algebra) == 2 {
+		pawnDir := -1
+		if board.Active == Black {
+			pawnDir = 1
+		}
+		ourPawn := board.Active | Pawn
+
+		target := CreateCoordAlgebra(algebra)
+		if board.Get(target.Add(pawnDir, 0)) == ourPawn {
+			return board.CreateMove(target.Add(pawnDir, 0), target)
+		} else if board.Get(target.Add(pawnDir*2, 0)) == ourPawn {
+			return board.CreateMove(target.Add(pawnDir*2, 0), target)
+		} else {
+			panic(fmt.Errorf("invalid move: %v", algebra))
+		}
+	}
+	return board.CreateMoveStr(algebra[:2], algebra[2:])
+}
+
 func (game Game) GetImmediateMoves() []Move {
 	result := []Move{}
 
