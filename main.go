@@ -14,7 +14,7 @@ func main() {
 
 	baseMoves := board.GetMoves()
 
-	depth := 2
+	depth := 5
 	total := 0
 
 	for _, move := range baseMoves {
@@ -22,7 +22,7 @@ func main() {
 
 		perft := board.Perft(depth - 1)
 		total += perft
-		fmt.Printf("%v%v: %d moves\n", move.From.GetAlgebra(), move.To.GetAlgebra(), perft)
+		fmt.Printf("%v%v: %d\n", move.From.GetAlgebra(), move.To.GetAlgebra(), perft)
 
 		board.UndoMove()
 	}
