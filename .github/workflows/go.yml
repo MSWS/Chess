@@ -24,13 +24,19 @@ jobs:
         with:
           go-version: ^1.23
 
-      - name: Run Tests with Coverage (Allow Failures)
+      - name: Install dependencies
+        run: go install github.com/jstemmer/go-junit-report/v2@latest
+
+      - name: Test with coverage
         run: |
-          go test -cover -coverprofile=coverage.txt -json ./... ./testdata > test-results.json || echo "TESTS_FAILED=true" >> $GITHUB_ENV - name: Publish Test Results
+          go test -cover -coverprofile=coverage.txt -json ./... ./testdata > test-results.json
+      
+      - name: Generate JUnit report
+        run: go-junit-report < test-results.json > test-results.xml
 
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
           files: |
-            test-results.json
+            test-results.xml
