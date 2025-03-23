@@ -109,28 +109,32 @@ func (game Game) GetMoves() []Move {
 
 				legal := true
 				for _, enemyMove := range enemyMoves {
-					if enemyMove.IsCastle() {
-						continue
-					}
-					if psuedoMove.IsCastle() && enemyMove.capture.GetType() == Rook {
-						targetRow, targetCol := psuedoMove.to.GetCoords()
-						enemyRow, enemyCol := enemyMove.to.GetCoords()
-						if targetRow != enemyRow {
-							continue
-						}
-						if targetCol == 0 && enemyCol == 3 {
-							legal = false
-							break
-						}
-						if targetCol == 7 && enemyCol == 5 {
-							legal = false
-							break
-						}
-					}
-
 					if enemyMove.capture.GetType() == King {
 						legal = false
 						break
+					}
+					if psuedoMove.IsCastle() {
+						enemyRow, enemyCol := enemyMove.to.GetCoords()
+						targetRow, targetCol := psuedoMove.to.GetCoords()
+
+						if enemyRow == targetRow && enemyCol == 4 {
+							legal = false
+							break
+						}
+
+						if enemyMove.capture.GetType() == Rook {
+							if targetRow != enemyRow {
+								continue
+							}
+							if targetCol == 0 && enemyCol == 3 {
+								legal = false
+								break
+							}
+							if targetCol == 7 && enemyCol == 5 {
+								legal = false
+								break
+							}
+						}
 					}
 				}
 
