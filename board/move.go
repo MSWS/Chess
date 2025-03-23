@@ -2,6 +2,7 @@ package board
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 )
 
@@ -44,6 +45,42 @@ func (move Move) String() string {
 	return sb.String()
 }
 
+func (move Move) GetAlgebra(game *Game) string {
+	var result strings.Builder
+	_, fromCol := move.from.GetCoords()
+
+	switch move.piece.GetType() {
+	case Pawn:
+		result.WriteRune(rune(int(fromCol) + 'a'))
+	case King:
+		if move.IsCastle() {
+			if fromCol == 4 {
+				result.WriteString("O-O")
+			} else {
+				result.WriteString("O-O-O")
+			}
+		} else {
+			result.WriteRune('K')
+		}
+	case Queen:
+		result.WriteRune('Q')
+	case Rook:
+		result.WriteRune('R')
+	case Bishop:
+		result.WriteRune('B')
+	case Knight:
+		result.WriteRune('N')
+	}
+
+	if move.capture != 0 {
+		result.WriteString("x")
+		result.WriteString(move.to.GetAlgebra())
+	}
+
+	// TODO: Checks, Mates
+	return result.String()
+}
+
 func (board Game) CreateMove(from Coordinate, to Coordinate) Move {
 	result := Move{
 		from:    from,
@@ -63,6 +100,7 @@ func (board Game) CreateMoveStr(from string, to string) Move {
 }
 
 func (board Game) CreateMoveAlgebra(algebra string) Move {
+	algebra = regexp.MustCompile("[x+#]").ReplaceAllString(algebra, "")
 	if len(algebra) == 2 {
 		// Pawn move
 		pawnDir := -1
@@ -118,7 +156,7 @@ func (board Game) CreateMoveAlgebra(algebra string) Move {
 	case 'k':
 		piece = King
 	default:
-		panic(fmt.Errorf("unknown piece: %v", algebra))
+		piece = Pawn
 	}
 
 	return board.createMoveFromTarget(piece, algebra[1:])

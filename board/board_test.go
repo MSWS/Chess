@@ -207,7 +207,22 @@ func TestCreateMoveAlgebra(t *testing.T) {
 	})
 
 	t.Run("Pawn", func(t *testing.T) {
+		t.Run("En Passant", func(t *testing.T) {
+			board, err := FromFEN("8/8/8/3Pp3/8/8/8/8 w - e6 0 1")
+			if err != nil {
+				t.Error(err)
+			}
 
+			move := board.CreateMoveAlgebra("dxe6")
+
+			if move.from.GetAlgebra() != "d5" {
+				t.Errorf("expected from to be d5, got %v", move.from.GetAlgebra())
+			}
+
+			if move.to.GetAlgebra() != "e6" {
+				t.Errorf("expected to to be e6, got %v", move.to.GetAlgebra())
+			}
+		})
 	})
 }
 
