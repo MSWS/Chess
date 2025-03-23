@@ -15,7 +15,7 @@ func getStartMovesForType(piece Piece) []Move {
 	result := []Move{}
 
 	for _, move := range start.GetMoves() {
-		if start.Get(move.from).GetType() != piece.GetType() {
+		if start.Get(move.From).GetType() != piece.GetType() {
 			continue
 		}
 
@@ -102,7 +102,7 @@ func TestPerfs(t *testing.T) {
 						t.Error(err)
 					}
 				}()
-				calculated := start.perft(ply)
+				calculated := start.Perft(ply)
 				if calculated != test.knownPerfs[ply-1] {
 					t.Fatalf("expected %v nodes, got %v", test.knownPerfs[ply-1], calculated)
 				}
@@ -129,43 +129,25 @@ func TestIsCastle(t *testing.T) {
 	})
 }
 
-func (game Game) perft(depth int) int {
-	var nodes int
-
-	moves := game.GetMoves()
-
-	if depth == 1 {
-		return len(moves)
-	}
-
-	for _, move := range moves {
-		game.MakeMove(move)
-		nodes += game.perft(depth - 1)
-		game.UndoMove()
-	}
-
-	return nodes
-}
-
 func TestCreateMove(t *testing.T) {
 	t.Run("Basic Pawn Push", func(t *testing.T) {
 		start := getStartGame()
 		move := start.CreateMoveStr("e2", "e4")
 
-		if move.from.GetAlgebra() != "e2" {
-			t.Errorf("expected origin square to be %v, got %v", "e2", move.from.GetAlgebra())
+		if move.From.GetAlgebra() != "e2" {
+			t.Errorf("expected origin square to be %v, got %v", "e2", move.From.GetAlgebra())
 		}
 
-		if move.to.GetAlgebra() != "e4" {
-			t.Errorf("expected target square to be %v, got %v", "e4", move.to.GetAlgebra())
+		if move.To.GetAlgebra() != "e4" {
+			t.Errorf("expected target square to be %v, got %v", "e4", move.To.GetAlgebra())
 		}
 
-		if move.piece != White|Pawn {
-			t.Errorf("expected origin piece to be %v, got %v", Piece(White|Pawn).GetRune(), move.piece.GetRune())
+		if move.Piece != White|Pawn {
+			t.Errorf("expected origin piece to be %v, got %v", Piece(White|Pawn).GetRune(), move.Piece.GetRune())
 		}
 
-		if move.capture != 0 {
-			t.Errorf("expected captured piece to be %v, got %v", 0, move.capture)
+		if move.Capture != 0 {
+			t.Errorf("expected captured piece to be %v, got %v", 0, move.Capture)
 		}
 	})
 
@@ -186,11 +168,11 @@ func TestCreateMove(t *testing.T) {
 
 		move := board.CreateMoveStr("a1", "a8")
 
-		if move.piece != White|Rook {
-			t.Errorf("expected origin piece to be %v, got %v", Piece(White|Rook).GetRune(), move.piece.GetRune())
+		if move.Piece != White|Rook {
+			t.Errorf("expected origin piece to be %v, got %v", Piece(White|Rook).GetRune(), move.Piece.GetRune())
 		}
-		if move.capture != Black|Rook {
-			t.Errorf("expected captured piece to be %v, got %v", Piece(Black|Rook).GetRune(), move.capture.GetRune())
+		if move.Capture != Black|Rook {
+			t.Errorf("expected captured piece to be %v, got %v", Piece(Black|Rook).GetRune(), move.Capture.GetRune())
 		}
 	})
 }

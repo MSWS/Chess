@@ -80,30 +80,30 @@ func (board *Game) MakeMove(move Move) {
 	board.WhiteCastleHistory = append(board.WhiteCastleHistory, board.WhiteCastling)
 	board.BlackCastleHistory = append(board.BlackCastleHistory, board.BlackCastling)
 	board.PreviousEnpassant = board.EnPassant
-	captured := board.Get(move.to)
-	move.capture = captured
+	captured := board.Get(move.To)
+	move.Capture = captured
 
-	board.Move(move.from, move.to)
-	_, fromCol := move.from.GetCoords()
+	board.Move(move.From, move.To)
+	_, fromCol := move.From.GetCoords()
 
-	if move.piece.GetType() == Pawn {
-		toRow, _ := move.to.GetCoords()
+	if move.Piece.GetType() == Pawn {
+		toRow, _ := move.To.GetCoords()
 		if toRow == 0 || toRow == 7 { // Promotions
 			if move.promotionTo == 0 {
-				move.promotionTo = Queen | move.piece.GetColor()
+				move.promotionTo = Queen | move.Piece.GetColor()
 			}
-			board.Set(move.to, move.promotionTo|move.piece.GetColor())
+			board.Set(move.To, move.promotionTo|move.Piece.GetColor())
 		}
 
 	}
 	board.applyEnPassant(&move)
 
 	castlability := &board.WhiteCastling
-	if move.piece.GetColor() == Black {
+	if move.Piece.GetColor() == Black {
 		castlability = &board.BlackCastling
 	}
 
-	if move.piece.GetType() == Rook {
+	if move.Piece.GetType() == Rook {
 		if fromCol == 0 {
 			castlability.QueenSide = false
 		} else if fromCol == 7 {
@@ -111,12 +111,37 @@ func (board *Game) MakeMove(move Move) {
 		}
 	}
 
-	if move.piece.GetType() == King {
+	if move.Piece.GetType() == King {
 		castlability.KingSide = false
 		castlability.QueenSide = false
 
 		if move.IsCastle() {
 			board.applyCastle(move)
+		}
+	}
+
+	if move.Capture.GetType() == Rook {
+		// If capturing a rook that would've otherwise allowed castling
+		// make sure we update the enemy's castlablity
+
+		enemyCastling := &board.BlackCastling
+		if move.Capture.GetColor() == White {
+			enemyCastling = &board.WhiteCastling
+		}
+
+		toRow, toCol := move.To.GetCoords()
+
+		enemyHomeRow := 7
+		if move.Capture.GetColor() == White {
+			enemyHomeRow = 0
+		}
+
+		if toRow == byte(enemyHomeRow) {
+			if toCol == 0 {
+				enemyCastling.QueenSide = false
+			} else if toCol == 7 {
+				enemyCastling.KingSide = false
+			}
 		}
 	}
 
@@ -127,16 +152,16 @@ func (board *Game) MakeMove(move Move) {
 
 func (board *Game) UndoMove() {
 	move := board.Moves[len(board.Moves)-1]
-	board.Set(move.to, move.capture)
-	board.Set(move.from, move.piece)
+	board.Set(move.To, move.Capture)
+	board.Set(move.From, move.Piece)
 
 	castling := &board.WhiteCastling
-	if move.piece.GetColor() == Black {
+	if move.Piece.GetColor() == Black {
 		castling = &board.BlackCastling
 	}
 
-	toRow, toCol := move.to.GetCoords()
-	fromRow, _ := move.from.GetCoords()
+	toRow, toCol := move.To.GetCoords()
+	fromRow, _ := move.From.GetCoords()
 
 	if move.IsCastle() {
 		if toCol == 0 {
@@ -152,10 +177,10 @@ func (board *Game) UndoMove() {
 	}
 
 	if move.isEnPassant {
-		board.Set(move.to, 0)
+		board.Set(move.To, 0)
 		captured := CreateCoordByte(fromRow, toCol)
-		board.Set(captured, move.capture)
-		board.EnPassant = &move.to
+		board.Set(captured, move.Capture)
+		board.EnPassant = &move.To
 	} else {
 		board.EnPassant = board.PreviousEnpassant
 	}
@@ -170,33 +195,33 @@ func (board *Game) UndoMove() {
 }
 
 func (board *Game) applyEnPassant(move *Move) {
-	toRow, toCol := move.to.GetCoords()
-	fromRow, fromCol := move.from.GetCoords()
-	if move.piece.GetType() != Pawn {
+	toRow, toCol := move.To.GetCoords()
+	fromRow, fromCol := move.From.GetCoords()
+	if move.Piece.GetType() != Pawn {
 		board.EnPassant = nil
 		return
 	}
 
-	enemyPiece := Pawn | ((^move.piece).GetColor())
-	if board.EnPassant != nil && move.to == *board.EnPassant {
+	enemyPiece := Pawn | ((^move.Piece).GetColor())
+	if board.EnPassant != nil && move.To == *board.EnPassant {
 		// En passant!
 		captured := CreateCoordByte(fromRow, toCol)
 		if board.Get(captured) != enemyPiece {
 			panic(fmt.Sprintf("En Passanted non-enemy piece on %v, got %v, expected %v", captured, board.Get(captured), enemyPiece))
 		}
 		board.Set(captured, 0)
-		move.capture = enemyPiece
+		move.Capture = enemyPiece
 		move.isEnPassant = true
 	}
 	board.EnPassant = nil
 
 	if (toRow == 3 || toRow == 4) && (fromRow == 1 || fromRow == 6) {
 		rowDir := (int(toRow) - int(fromRow)) / 2
-		if fromCol > 0 && board.Get(move.to.Add(0, -1)) == enemyPiece {
-			enpassant := move.from.Add(rowDir, 0)
+		if fromCol > 0 && board.Get(move.To.Add(0, -1)) == enemyPiece {
+			enpassant := move.From.Add(rowDir, 0)
 			board.EnPassant = &enpassant
-		} else if fromCol < 7 && board.Get(move.to.Add(0, 1)) == enemyPiece {
-			enpassant := move.from.Add(rowDir, 0)
+		} else if fromCol < 7 && board.Get(move.To.Add(0, 1)) == enemyPiece {
+			enpassant := move.From.Add(rowDir, 0)
 			board.EnPassant = &enpassant
 		}
 	}
@@ -205,16 +230,16 @@ func (board *Game) applyEnPassant(move *Move) {
 func (board Game) applyCastle(move Move) {
 	kingSquare := 2
 	rookSquare := 3
-	castleRow, castleCol := move.to.GetCoords()
+	castleRow, castleCol := move.To.GetCoords()
 
 	if castleCol == 7 {
 		kingSquare = 6
 		rookSquare = 5
 	}
 
-	board.Set(move.to, 0)
-	board.Set(CreateCoordByte(castleRow, byte(kingSquare)), move.piece)
-	board.Set(CreateCoordByte(castleRow, byte(rookSquare)), move.capture)
+	board.Set(move.To, 0)
+	board.Set(CreateCoordByte(castleRow, byte(kingSquare)), move.Piece)
+	board.Set(CreateCoordByte(castleRow, byte(rookSquare)), move.Capture)
 }
 
 func (board *Game) MakeMoveStr(str string) {
@@ -385,6 +410,28 @@ func (board Game) ToFEN() string {
 	result.WriteString(fmt.Sprint(board.FullMoves))
 
 	return result.String()
+}
+
+func (game Game) Perft(depth int) int {
+	if depth == 0 {
+		return 1
+	}
+
+	var nodes int
+
+	moves := game.GetMoves()
+
+	if depth == 1 {
+		return len(moves)
+	}
+
+	for _, move := range moves {
+		game.MakeMove(move)
+		nodes += game.Perft(depth - 1)
+		game.UndoMove()
+	}
+
+	return nodes
 }
 
 func formatCastling(str string, color Piece) Castling {

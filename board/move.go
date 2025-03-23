@@ -7,20 +7,20 @@ import (
 )
 
 type Move struct {
-	from, to    Coordinate
-	piece       Piece
-	capture     Piece
+	From, To    Coordinate
+	Piece       Piece
+	Capture     Piece
 	promotionTo Piece
 	isEnPassant bool
 }
 
 func (move Move) IsCastle() bool {
-	if move.piece.GetType() != King {
+	if move.Piece.GetType() != King {
 		return false
 	}
 
-	_, fromCol := move.from.GetCoords()
-	_, toCol := move.to.GetCoords()
+	_, fromCol := move.From.GetCoords()
+	_, toCol := move.To.GetCoords()
 
 	if fromCol > toCol {
 		toCol, fromCol = fromCol, toCol
@@ -31,10 +31,10 @@ func (move Move) IsCastle() bool {
 
 func (move Move) String() string {
 	var sb strings.Builder
-	sb.WriteString(fmt.Sprintf("mv{%v%v", move.from, move.to))
+	sb.WriteString(fmt.Sprintf("mv{%v%v", move.From, move.To))
 
-	if move.capture != 0 {
-		sb.WriteString(fmt.Sprintf(",X%v", move.capture))
+	if move.Capture != 0 {
+		sb.WriteString(fmt.Sprintf(",X%v", move.Capture))
 	}
 	if move.promotionTo != 0 {
 		sb.WriteString(fmt.Sprintf(",P%v", move.promotionTo))
@@ -47,9 +47,9 @@ func (move Move) String() string {
 
 func (move Move) GetAlgebra(game *Game) string {
 	var result strings.Builder
-	_, fromCol := move.from.GetCoords()
+	_, fromCol := move.From.GetCoords()
 
-	switch move.piece.GetType() {
+	switch move.Piece.GetType() {
 	case Pawn:
 		result.WriteRune(rune(int(fromCol) + 'a'))
 	case King:
@@ -72,10 +72,11 @@ func (move Move) GetAlgebra(game *Game) string {
 		result.WriteRune('N')
 	}
 
-	if move.capture != 0 {
+	if move.Capture != 0 {
 		result.WriteString("x")
-		result.WriteString(move.to.GetAlgebra())
 	}
+
+	result.WriteString(move.To.GetAlgebra())
 
 	// TODO: Checks, Mates
 	return result.String()
@@ -83,10 +84,10 @@ func (move Move) GetAlgebra(game *Game) string {
 
 func (board Game) CreateMove(from Coordinate, to Coordinate) Move {
 	result := Move{
-		from:    from,
-		to:      to,
-		piece:   board.Get(from),
-		capture: board.Get(to),
+		From:    from,
+		To:      to,
+		Piece:   board.Get(from),
+		Capture: board.Get(to),
 	}
 
 	return result
@@ -178,7 +179,7 @@ func (board Game) createMoveFromTarget(piece Piece, algebra string) Move {
 	source := board.getSourceCoord(piece, func(coord Coordinate) bool {
 		immediateMoves := board.getMovesFor(coord)
 		for _, move := range immediateMoves {
-			if move.to == target {
+			if move.To == target {
 				return true
 			}
 		}
@@ -262,7 +263,7 @@ func (game Game) GetMoves() []Move {
 			legalMoves := []Move{}
 
 			for _, psuedoMove := range psuedo {
-				if psuedoMove.capture.GetType() == King {
+				if psuedoMove.Capture.GetType() == King {
 					continue
 				}
 				game.MakeMove(psuedoMove)
@@ -271,20 +272,20 @@ func (game Game) GetMoves() []Move {
 
 				legal := true
 				for _, enemyMove := range enemyMoves {
-					if enemyMove.capture.GetType() == King {
+					if enemyMove.Capture.GetType() == King {
 						legal = false
 						break
 					}
 					if psuedoMove.IsCastle() {
-						enemyRow, enemyCol := enemyMove.to.GetCoords()
-						targetRow, targetCol := psuedoMove.to.GetCoords()
+						enemyRow, enemyCol := enemyMove.To.GetCoords()
+						targetRow, targetCol := psuedoMove.To.GetCoords()
 
 						if enemyRow == targetRow && enemyCol == 4 {
 							legal = false
 							break
 						}
 
-						if enemyMove.capture.GetType() == Rook {
+						if enemyMove.Capture.GetType() == Rook {
 							if targetRow != enemyRow {
 								continue
 							}
@@ -356,7 +357,7 @@ func (game Game) getPawnMoves(coord Coordinate) []Move {
 	}
 	moves = append(moves, game.CreateMove(coord, CreateCoordInt(int(row)+direction, int(col))))
 	moves = filter(moves, func(m Move) bool {
-		return m.capture == 0
+		return m.Capture == 0
 	})
 
 	// Capturing
@@ -365,19 +366,19 @@ func (game Game) getPawnMoves(coord Coordinate) []Move {
 			continue
 		}
 		capture := game.CreateMove(coord, CreateCoordInt(int(row)+direction, int(col)+dx))
-		if capture.capture != 0 && capture.piece.GetColor() != capture.capture.GetColor() {
+		if capture.Capture != 0 && capture.Piece.GetColor() != capture.Capture.GetColor() {
 			moves = append(moves, capture)
 		}
 	}
 
 	// Promoting
 	for _, move := range moves {
-		row, _ := move.to.GetCoords()
+		row, _ := move.To.GetCoords()
 
 		if row == 0 || row == 7 {
 			// A 0 promotionTo defaults to Queen for simplicity
 			for _, piece := range []Piece{Knight, Bishop, Rook} {
-				move.promotionTo = piece | move.piece.GetColor()
+				move.promotionTo = piece | move.Piece.GetColor()
 				moves = append(moves, move)
 			}
 		}
@@ -514,12 +515,12 @@ func (game Game) getSlidingMoves(coord Coordinate, offsetX int, offsetY int) []M
 
 		move := game.CreateMove(coord, current)
 
-		if move.capture == 0 {
+		if move.Capture == 0 {
 			moves = append(moves, move)
 			continue
 		}
 
-		if move.piece.GetColor() != move.capture.GetColor() {
+		if move.Piece.GetColor() != move.Capture.GetColor() {
 			moves = append(moves, move)
 		}
 		break
@@ -543,12 +544,12 @@ func filter[T any](arr []T, predicate func(T) bool) []T {
 
 func (board Game) filterEnemies(moves []Move) []Move {
 	return filter(moves, func(m Move) bool {
-		return m.capture == 0 || m.piece.GetColor() == m.capture.GetColor()
+		return m.Capture == 0 || m.Piece.GetColor() == m.Capture.GetColor()
 	})
 }
 
 func (board Game) filterAllies(moves []Move) []Move {
 	return filter(moves, func(m Move) bool {
-		return m.capture == 0 || m.piece.GetColor() != m.capture.GetColor()
+		return m.Capture == 0 || m.Piece.GetColor() != m.Capture.GetColor()
 	})
 }

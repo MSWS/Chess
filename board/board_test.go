@@ -85,8 +85,8 @@ func TestMakeMove(t *testing.T) {
 
 		start.MakeMove(move)
 
-		if start.Get(move.to) != White|Queen {
-			t.Errorf("board did not properly promote pawn to queen, got %c", start.Get(move.to).GetRune())
+		if start.Get(move.To) != White|Queen {
+			t.Errorf("board did not properly promote pawn to queen, got %c", start.Get(move.To).GetRune())
 		}
 	})
 
@@ -195,12 +195,12 @@ func TestCreateMoveAlgebra(t *testing.T) {
 				start := getStartGame()
 				move := start.CreateMoveAlgebra(test.move)
 
-				if move.from.GetAlgebra() != test.from {
-					t.Errorf("expected from to be %v, got %v", test.from, move.from.GetAlgebra())
+				if move.From.GetAlgebra() != test.from {
+					t.Errorf("expected from to be %v, got %v", test.from, move.From.GetAlgebra())
 				}
 
-				if move.to.GetAlgebra() != test.to {
-					t.Errorf("expected to to be %v, got %v", test.to, move.to.GetAlgebra())
+				if move.To.GetAlgebra() != test.to {
+					t.Errorf("expected to to be %v, got %v", test.to, move.To.GetAlgebra())
 				}
 			})
 		}
@@ -215,12 +215,12 @@ func TestCreateMoveAlgebra(t *testing.T) {
 
 			move := board.CreateMoveAlgebra("dxe6")
 
-			if move.from.GetAlgebra() != "d5" {
-				t.Errorf("expected from to be d5, got %v", move.from.GetAlgebra())
+			if move.From.GetAlgebra() != "d5" {
+				t.Errorf("expected from to be d5, got %v", move.From.GetAlgebra())
 			}
 
-			if move.to.GetAlgebra() != "e6" {
-				t.Errorf("expected to to be e6, got %v", move.to.GetAlgebra())
+			if move.To.GetAlgebra() != "e6" {
+				t.Errorf("expected to to be e6, got %v", move.To.GetAlgebra())
 			}
 		})
 	})
