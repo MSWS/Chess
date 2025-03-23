@@ -95,8 +95,8 @@ func (board *Game) MakeMove(move Move) {
 			board.Set(move.to, move.promotionTo|move.piece.GetColor())
 		}
 
-		board.applyEnPassant(&move)
 	}
+	board.applyEnPassant(&move)
 
 	castlability := &board.WhiteCastling
 	if move.piece.GetColor() == Black {
