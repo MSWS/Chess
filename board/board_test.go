@@ -309,8 +309,6 @@ func TestUndoMove(t *testing.T) {
 
 				expected := CreateCoordAlgebra("d6")
 
-				t.Log(board.ToFEN())
-
 				if board.EnPassant == nil || *board.EnPassant != expected {
 					if board.EnPassant == nil {
 						t.Errorf("board failed to restore en passant, expected %v, got %v", expected, nil)

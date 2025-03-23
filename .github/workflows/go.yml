@@ -27,3 +27,4 @@ jobs:
         run: |
           go build
           go test -v -cover ./...
+          go test -v ./testdata/
