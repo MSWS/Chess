@@ -64,6 +64,7 @@ func (board Game) CreateMoveStr(from string, to string) Move {
 
 func (board Game) CreateMoveAlgebra(algebra string) Move {
 	if len(algebra) == 2 {
+		// Pawn move
 		pawnDir := -1
 		if board.Active == Black {
 			pawnDir = 1
@@ -79,7 +80,110 @@ func (board Game) CreateMoveAlgebra(algebra string) Move {
 			panic(fmt.Errorf("invalid move: %v", algebra))
 		}
 	}
-	return board.CreateMoveStr(algebra[:2], algebra[2:])
+
+	if algebra[0] == 'O' || algebra[0] == '0' {
+		castleRow := 0
+		if board.Active == Black {
+			castleRow = 7
+		}
+
+		fromCol := 4
+		toCol := 0
+
+		if len(algebra) == 3 {
+			toCol = 7
+		}
+
+		return board.CreateMove(
+			CreateCoordInt(castleRow, fromCol),
+			CreateCoordInt(castleRow, toCol),
+		)
+	}
+
+	if len(algebra) == 5 {
+		// Double disambiguation, we know exactly from -> to
+		return board.CreateMoveStr(algebra[1:3], algebra[3:])
+	}
+
+	piece := King
+	switch strings.ToLower(algebra)[0] {
+	case 'n':
+		piece = Knight
+	case 'b':
+		piece = Bishop
+	case 'r':
+		piece = Rook
+	case 'q':
+		piece = Queen
+	case 'k':
+		piece = King
+	default:
+		panic(fmt.Errorf("unknown piece: %v", algebra))
+	}
+
+	return board.createMoveFromTarget(piece, algebra[1:])
+}
+
+func (board Game) createMoveFromTarget(piece Piece, algebra string) Move {
+	if len(algebra) == 3 {
+		target := CreateCoordAlgebra(algebra[1:])
+		if algebra[0] >= 'a' && algebra[0] <= 'h' {
+			return board.createMoveFromDisambiguatedCol(piece, algebra[0]-'a', target)
+		}
+		if algebra[0] >= '1' && algebra[0] <= '8' {
+			return board.createMoveFromDisambiguatedRow(piece, algebra[0]-'1', target)
+		}
+		panic(fmt.Errorf("invalid move: %v", algebra))
+	}
+
+	target := CreateCoordAlgebra(algebra)
+	source := board.getSourceCoord(piece, func(coord Coordinate) bool {
+		immediateMoves := board.getMovesFor(coord)
+		for _, move := range immediateMoves {
+			if move.to == target {
+				return true
+			}
+		}
+
+		return false
+	})
+
+	return board.CreateMove(source, CreateCoordAlgebra(algebra))
+}
+
+func (board Game) createMoveFromDisambiguatedCol(piece Piece, row byte, target Coordinate) Move {
+	source := board.getSourceCoord(piece, func(coord Coordinate) bool {
+		_, col := coord.GetCoords()
+		return col == row
+	})
+
+	return board.CreateMove(source, target)
+}
+
+func (board Game) createMoveFromDisambiguatedRow(piece Piece, row byte, target Coordinate) Move {
+	source := board.getSourceCoord(piece, func(coord Coordinate) bool {
+		row, _ := coord.GetCoords()
+		return row == row
+	})
+
+	return board.CreateMove(source, target)
+}
+
+func (board Game) getSourceCoord(piece Piece, filter func(Coordinate) bool) Coordinate {
+	for row := 0; row < len(board.Board); row++ {
+		for col := 0; col < len(board.Board[row]); col++ {
+			p := board.Board[row][col]
+			if p == 0 || p.GetType() != piece || p.GetColor() != board.Active {
+				continue
+			}
+			if !filter(CreateCoordInt(row, col)) {
+				continue
+			}
+			return CreateCoordInt(row, col)
+		}
+	}
+
+	panic(fmt.Errorf("no matching piece found"))
 }
 
 func (game Game) GetImmediateMoves() []Move {

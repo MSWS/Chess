@@ -160,7 +160,6 @@ func TestMakeMove(t *testing.T) {
 					t.Errorf("board failed to unmark en passant, expected %v, got %v", nil, *board.EnPassant)
 				}
 			})
-
 		})
 	})
 }
@@ -193,13 +192,7 @@ func TestCreateMoveAlgebra(t *testing.T) {
 
 		for _, test := range data {
 			t.Run(test.move, func(t *testing.T) {
-				defer func() {
-					if r := recover(); r != nil {
-						t.Errorf("unexpected panic: %v", r)
-					}
-				}()
 				start := getStartGame()
-
 				move := start.CreateMoveAlgebra(test.move)
 
 				if move.from.GetAlgebra() != test.from {
@@ -211,6 +204,10 @@ func TestCreateMoveAlgebra(t *testing.T) {
 				}
 			})
 		}
+	})
+
+	t.Run("Pawn", func(t *testing.T) {
+
 	})
 }
 
