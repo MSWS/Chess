@@ -25,7 +25,7 @@ jobs:
 
       - name: Run Tests with Coverage (Allow Failures)
         run: |
-          go test -cover -coverprofile=coverage.txt -json ./... > test-results.json || echo "TESTS_FAILED=true" >> $GITHUB_ENV
+          go test -cover -coverprofile=coverage.txt -json ./... ./testdata > test-results.json || echo "TESTS_FAILED=true" >> $GITHUB_ENV
 
       - name: Archive Code Coverage Results
         uses: actions/upload-artifact@v4
