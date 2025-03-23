@@ -214,6 +214,14 @@ func getPerfData() map[string]struct {
 			knownPerfs: []int{44},
 			FEN:        "r3k2r/p1ppqpb1/bn2pnp1/3PN3/Pp2P3/2N2Q1p/1PPBBPPP/R3K2R b KQkq a3 0 1",
 		},
+		"Kiwipete - Checked": {
+			knownPerfs: []int{6},
+			FEN:        "r3k2r/p1pPqpb1/1n3np1/1b2N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - 0 2",
+		},
+		"Kiwipete - Minimized": {
+			knownPerfs: []int{3},
+			FEN:        "4k2r/3P4/8/4N3/8/8/8/4K3 b k - 0 1",
+		},
 		"3": {
 			knownPerfs: []int{14, 191, 2812, 43238},
 			FEN:        "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",

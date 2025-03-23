@@ -201,8 +201,8 @@ func (board Game) createMoveFromDisambiguatedCol(piece Piece, row byte, target C
 
 func (board Game) createMoveFromDisambiguatedRow(piece Piece, row byte, target Coordinate) Move {
 	source := board.getSourceCoord(piece, func(coord Coordinate) bool {
-		row, _ := coord.GetCoords()
-		return row == row
+		cRow, _ := coord.GetCoords()
+		return row == cRow
 	})
 
 	return board.CreateMove(source, target)
@@ -266,8 +266,8 @@ func (game Game) GetMoves() []Move {
 				if psuedoMove.Capture.GetType() == King {
 					continue
 				}
-				game.MakeMove(psuedoMove)
 
+				game.MakeMove(psuedoMove)
 				enemyMoves := game.GetImmediateMoves()
 
 				legal := true
@@ -281,6 +281,7 @@ func (game Game) GetMoves() []Move {
 						targetRow, targetCol := psuedoMove.To.GetCoords()
 
 						if enemyRow == targetRow && enemyCol == 4 {
+							// Cannot castle out of check
 							legal = false
 							break
 						}
@@ -416,8 +417,7 @@ func (game Game) getKnightMoves(coord Coordinate) []Move {
 			continue
 		}
 
-		toCoord := CreateCoordByte(tx, ty)
-		moves = append(moves, game.CreateMove(coord, toCoord))
+		moves = append(moves, game.CreateMove(coord, coord.Add(offset[0], offset[1])))
 	}
 
 	moves = game.filterAllies(moves)
@@ -463,9 +463,25 @@ func (game Game) getCastleMoves(coord Coordinate) []Move {
 	castling := game.WhiteCastling
 	castleRow := 0
 
+	pawnCheckRow := 1
+
 	if game.Active == Black {
 		castling = game.BlackCastling
 		castleRow = 7
+		pawnCheckRow = 6
+	}
+
+	// Edge case where once the king has moved, the pawn would
+	// no longer be able to capture.
+	// But the pawn being there in the first place already marks
+	// the king in check, regardless of the pawn's ability to capture.
+	enemyPawn := (^game.Active).GetColor() | Pawn
+	for _, col := range []int{3, 5} {
+		piece := game.Board[pawnCheckRow][col]
+		if piece != enemyPawn {
+			continue
+		}
+		return moves
 	}
 
 	if castling.KingSide {
