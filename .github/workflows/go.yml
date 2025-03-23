@@ -23,9 +23,9 @@ jobs:
         with:
           go-version: ^1.22
 
-      - name: Run Tests with Coverage
+      - name: Run Tests with Coverage (Allow Failures)
         run: |
-          go test -cover -coverprofile=coverage.txt -json ./... > test-results.json
+          go test -cover -coverprofile=coverage.txt -json ./... > test-results.json || echo "TESTS_FAILED=true" >> $GITHUB_ENV
 
       - name: Archive Code Coverage Results
         uses: actions/upload-artifact@v4
@@ -41,9 +41,9 @@ jobs:
 
   code_coverage:
     name: "Code Coverage Report"
-    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     needs: unit_tests
+    if: always()
     permissions:
       contents: read
       actions: read
@@ -59,6 +59,7 @@ jobs:
     name: "Test Summary"
     runs-on: ubuntu-latest
     needs: unit_tests
+    if: always()
     permissions:
       pull-requests: write
     steps:
@@ -83,3 +84,7 @@ jobs:
             ✅ **Test Summary**
             - Passed: ${{ env.PASSED_TESTS }}
             - Failed: ${{ env.FAILED_TESTS }}
+
+      - name: Fail Workflow if Tests Failed
+        if: env.TESTS_FAILED == 'true'
+        run: exit 1
