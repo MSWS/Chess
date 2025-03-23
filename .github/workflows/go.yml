@@ -71,12 +71,19 @@ jobs:
 
       - name: Extract Test Summary
         run: |
-          PASSED=$(jq '[.Tests[] | select(.Action=="pass")] | length' test-results.json)
-          FAILED=$(jq '[.Tests[] | select(.Action=="fail")] | length' test-results.json)
+          PASSED=$(jq '[. | select(.Action=="pass")] | length' test-results.json)
+          FAILED=$(jq '[. | select(.Action=="fail")] | length' test-results.json)
           echo "PASSED_TESTS=$PASSED" >> $GITHUB_ENV
           echo "FAILED_TESTS=$FAILED" >> $GITHUB_ENV
 
-      - name: Post Test Summary
+      - name: Output Summary for Pushes
+        if: github.event_name == 'push'
+        run: |
+          echo "✅ **Test Summary**" >> $GITHUB_STEP_SUMMARY
+          echo "- Passed: ${{ env.PASSED_TESTS }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Failed: ${{ env.FAILED_TESTS }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Post Test Summary as PR Comment
         uses: marocchino/sticky-pull-request-comment@v2
         if: github.event_name == 'pull_request'
         with:
