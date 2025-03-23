@@ -64,7 +64,7 @@ func TestMakeMove(t *testing.T) {
 			}
 
 			if start.GetStr("g1") != White|King {
-				t.Errorf("board did not properly place white king at f1, got %v", start.GetStr("g1"))
+				t.Errorf("board did not properly place white king at g1, got %v", start.GetStr("g1"))
 			}
 
 			if start.GetStr("h1") != 0 {
@@ -604,7 +604,7 @@ func TestFromFEN(t *testing.T) {
 				startRow,
 				{Pawn, Pawn, Pawn, Pawn, 0, Pawn, Pawn, Pawn},
 				{},
-				{0, 0, 0, 0, Pawn | White},
+				{0, 0, 0, 0, White | Pawn},
 				{0, 0, Pawn | Black},
 				{},
 				{Pawn, Pawn, 0, Pawn, Pawn, Pawn, Pawn, Pawn},
@@ -664,7 +664,7 @@ func markRowColor(row *[8]Piece, color Piece) {
 			continue
 		}
 
-		row[index] = row[index] | color
+		row[index] = row[index].GetType() | color
 	}
 }
 
