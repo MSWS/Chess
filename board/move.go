@@ -118,7 +118,7 @@ func (game Game) GetMoves() []Move {
 						if targetRow != enemyRow {
 							continue
 						}
-						if targetCol == 0 && enemyCol == 2 {
+						if targetCol == 0 && enemyCol == 3 {
 							legal = false
 							break
 						}

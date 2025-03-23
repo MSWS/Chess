@@ -66,7 +66,7 @@ func testJson(t *testing.T, bytes []byte) {
 
 func testData(t *testing.T, data TestData) {
 	for _, test := range data.Tests {
-		t.Log(test.Start.Description)
+		t.Log(test.Start.Description, test.Start.Fen)
 		t.Run(strings.ReplaceAll(test.Start.Fen, "/", "."), func(t *testing.T) {
 			testCase(t, test.Start, test.Expected)
 		})
