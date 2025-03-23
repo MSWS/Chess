@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // Single byte to store 2D coordinates,
@@ -412,23 +413,21 @@ func (board Game) ToFEN() string {
 	return result.String()
 }
 
-var perftCache map[string]int
+var perftCache sync.Map
 
 func (game Game) Perft(depth int) int {
 	if depth == 0 {
 		return 1
 	}
 
-	if perftCache == nil {
-		perftCache = make(map[string]int)
-	}
-
 	fen := game.ToFEN()
 	parts := strings.Split(fen, " ")
-	fen = parts[0] + parts[1] + parts[2] + parts[3] + string(depth)
+	fen = parts[0] + parts[1] + parts[2] + parts[3] + string(rune(depth))
 	fen += strconv.Itoa(depth)
-	if val, ok := perftCache[fen]; ok {
-		return val
+
+	val, ok := perftCache.Load(fen)
+	if ok {
+		return val.(int)
 	}
 
 	var nodes int
@@ -436,7 +435,7 @@ func (game Game) Perft(depth int) int {
 	moves := game.GetMoves()
 
 	if depth == 1 {
-		perftCache[fen] = len(moves)
+		perftCache.Store(fen, len(moves))
 		return len(moves)
 	}
 
@@ -446,7 +445,7 @@ func (game Game) Perft(depth int) int {
 		game.UndoMove()
 	}
 
-	perftCache[fen] = nodes
+	perftCache.Store(fen, nodes)
 	return nodes
 }
 
