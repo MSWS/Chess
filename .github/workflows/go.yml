@@ -26,5 +26,4 @@ jobs:
       - name: Find and process directories with go.mod
         run: |
           go build
-          go test -v -cover ./...
-          go test -v ./testdata/
+          go test -v -cover ./... ./testdata/
