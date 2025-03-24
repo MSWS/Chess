@@ -95,12 +95,16 @@ func TestPerfs(t *testing.T) {
 			}
 
 			for ply := 1; ply <= len(test.knownPerfs); ply++ {
-				t.Run(strconv.Itoa(ply), func(t *testing.T) {
+				success := t.Run(strconv.Itoa(ply), func(t *testing.T) {
 					calculated := start.Perft(ply)
 					if calculated != test.knownPerfs[ply-1] {
 						t.Fatalf("expected %v nodes, got %v", test.knownPerfs[ply-1], calculated)
 					}
 				})
+
+				if !success {
+					break
+				}
 			}
 		})
 	}
