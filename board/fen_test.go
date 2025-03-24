@@ -49,7 +49,7 @@ func TestGenerateRow(t *testing.T) {
 		},
 		"All Pawns": {
 			input:  "pppppppp",
-			result: [8]Piece{Pawn | Black, Pawn | Black, Pawn | Black, Pawn | Black, Pawn | Black, Pawn | Black, Pawn | Black, Pawn | Black},
+			result: [8]Piece{Black | Pawn, Black | Pawn, Black | Pawn, Black | Pawn, Black | Pawn, Black | Pawn, Black | Pawn, Black | Pawn},
 		},
 		"Starting Row": {
 			input:  "RNBQKBNR",
@@ -57,15 +57,15 @@ func TestGenerateRow(t *testing.T) {
 		},
 		"Rooks Only": {
 			input:  "r6R",
-			result: [8]Piece{Rook | Black, 0, 0, 0, 0, 0, 0, Rook | White},
+			result: [8]Piece{Rook | Black, 0, 0, 0, 0, 0, 0, White | Rook},
 		},
 		"Alternating Pawns": {
 			input:  "pP1Pp2P",
-			result: [8]Piece{Pawn | Black, Pawn | White, 0, Pawn | White, Pawn | Black, 0, 0, Pawn | White},
+			result: [8]Piece{Pawn | Black, White | Pawn, 0, White | Pawn, Pawn | Black, 0, 0, White | Pawn},
 		},
 		"Many Kings": {
 			input:  "KKKKkkkk",
-			result: [8]Piece{King | White, King | White, King | White, King | White, King | Black, King | Black, King | Black, King | Black},
+			result: [8]Piece{White | King, White | King, White | King, White | King, Black | King, Black | King, King | Black, King | Black},
 		},
 	}
 
@@ -115,10 +115,10 @@ func getStartBoard() *[8][8]Piece {
 
 func getTestBoard() *[8][8]Piece {
 	board := [8][8]Piece{
-		{0, 0, Pawn | White, 0, 0, 0, Knight | White},
+		{0, 0, White | Pawn, 0, 0, 0, White | Knight},
 		{0, Pawn | Black, 0, 0, 0, Bishop | Black},
-		{Bishop | White, 0, 0, 0, Rook | Black},
-		{0, 0, 0, Queen | White, 0, 0, 0, Queen | Black},
+		{White | Bishop, 0, 0, 0, Black | Rook},
+		{0, 0, 0, White | Queen, 0, 0, 0, Black | Queen},
 		{Pawn | Black, Pawn | Black, Pawn | Black},
 		{Pawn | Black, Pawn | Black},
 		{Pawn | Black},

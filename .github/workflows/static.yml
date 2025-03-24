@@ -1,0 +1,14 @@
+name: "Static"
+on: ["push", "pull_request"]
+
+jobs:
+  ci:
+    name: "Run CI"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dominikh/staticcheck-action@v1.3.1
+        with:
+          version: "latest"

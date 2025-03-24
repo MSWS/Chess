@@ -76,12 +76,12 @@ func getTestData() []struct {
 		rune  rune
 		piece Piece
 	}{
-		{rune: 'K', piece: King | White},
-		{rune: 'Q', piece: Queen | White},
-		{rune: 'R', piece: Rook | White},
-		{rune: 'B', piece: Bishop | White},
-		{rune: 'N', piece: Knight | White},
-		{rune: 'P', piece: Pawn | White},
+		{rune: 'K', piece: White | King},
+		{rune: 'Q', piece: White | Queen},
+		{rune: 'R', piece: White | Rook},
+		{rune: 'B', piece: White | Bishop},
+		{rune: 'N', piece: White | Knight},
+		{rune: 'P', piece: White | Pawn},
 		{rune: 'k', piece: King | Black},
 		{rune: 'q', piece: Queen | Black},
 		{rune: 'r', piece: Rook | Black},

@@ -565,12 +565,6 @@ func filter[T any](arr []T, predicate func(T) bool) []T {
 	return ret
 }
 
-func (board Game) filterEnemies(moves []Move) []Move {
-	return filter(moves, func(m Move) bool {
-		return m.Capture == 0 || m.Piece.GetColor() == m.Capture.GetColor()
-	})
-}
-
 func (board Game) filterAllies(moves []Move) []Move {
 	return filter(moves, func(m Move) bool {
 		return m.Capture == 0 || m.Piece.GetColor() != m.Capture.GetColor()
