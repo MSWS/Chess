@@ -163,6 +163,24 @@ func (board Game) CreateMoveAlgebra(algebra string) Move {
 	return board.createMoveFromTarget(piece, algebra[1:])
 }
 
+func (board Game) CreateMoveUCI(uci string) Move {
+	from := CreateCoordAlgebra(uci[:2])
+	to := CreateCoordAlgebra(uci[2:])
+
+	move := board.CreateMove(from, to)
+
+	if len(uci) == 5 {
+		piece, err := GetPiece(rune(uci[4]))
+		if err != nil {
+			panic(err)
+		}
+
+		move.promotionTo = piece
+	}
+
+	return move
+}
+
 func (board Game) createMoveFromTarget(piece Piece, algebra string) Move {
 	if len(algebra) == 3 {
 		target := CreateCoordAlgebra(algebra[1:])
