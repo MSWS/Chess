@@ -199,27 +199,27 @@ func getPerfData() map[string]struct {
 			FEN:        START_POSITION,
 		},
 		"Nf3 g5": {
-			knownPerfs: []int{22},
+			knownPerfs: []int{22, 657, 15616, 478736},
 			FEN:        "rnbqkbnr/pppp1ppp/8/4p3/8/5N2/PPPPPPPP/RNBQKB1R w KQkq - 0 2",
 		},
 		"a4 a5": {
 			FEN:        "rnbqkbnr/1ppppppp/8/p7/P7/8/1PPPPPPP/RNBQKBNR w KQkq - 0 2",
-			knownPerfs: []int{20},
+			knownPerfs: []int{20, 401, 9062, 204508},
 		},
 		"Kiwipete": {
 			knownPerfs: []int{48, 2039, 97862, 4085603 /*, 193690690 */},
 			FEN:        "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 0",
 		},
 		"Kiwipete - Passant": {
-			knownPerfs: []int{44},
+			knownPerfs: []int{44, 2149, 90978, 4387586},
 			FEN:        "r3k2r/p1ppqpb1/bn2pnp1/3PN3/Pp2P3/2N2Q1p/1PPBBPPP/R3K2R b KQkq a3 0 1",
 		},
 		"Kiwipete - Checked": {
-			knownPerfs: []int{6},
+			knownPerfs: []int{6, 280, 12919, 605604},
 			FEN:        "r3k2r/p1pPqpb1/1n3np1/1b2N3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R b KQkq - 0 2",
 		},
 		"Kiwipete - Minimized": {
-			knownPerfs: []int{3},
+			knownPerfs: []int{3, 44, 531, 7973, 115009},
 			FEN:        "4k2r/3P4/8/4N3/8/8/8/4K3 b k - 0 1",
 		},
 		"3": {
@@ -227,7 +227,7 @@ func getPerfData() map[string]struct {
 			FEN:        "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1",
 		},
 		"3 g3+": {
-			knownPerfs: []int{4},
+			knownPerfs: []int{4, 54, 1014, 14747},
 			FEN:        "8/2p5/3p4/KP5r/1R3p1k/6P1/4P3/8 b - - 0 1",
 		},
 		"4": {
@@ -243,7 +243,7 @@ func getPerfData() map[string]struct {
 			FEN:        "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10",
 		},
 		"Gaviota": {
-			knownPerfs: []int{14},
+			knownPerfs: []int{14, 97, 1585, 7630, 133028},
 			FEN:        "1N6/6k1/8/8/7B/8/8/4K3 w - - 19 103",
 		},
 	}
