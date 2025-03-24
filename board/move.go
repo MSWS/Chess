@@ -249,7 +249,14 @@ func (game Game) GetMoves() []Move {
 
 	board := game.Board
 	pieces := 0
-	for row := 0; row < len(board) && pieces < 16; row++ {
+	startRow := 0
+	rowDir := 1
+	if game.Active == Black {
+		startRow = 7
+		rowDir = -1
+	}
+
+	for row := startRow; row < len(board) && row >= 0 && pieces < 16; row += rowDir {
 		for col := 0; col < len(board[row]) && pieces < 16; col++ {
 			piece := board[row][col]
 
