@@ -42,7 +42,7 @@ jobs:
       - name: Test with coverage
         run: |
           go test -cover -coverprofile=coverage.txt -json ./... ./testdata > test-results.json
-      
+
       - name: Generate JUnit report
         if: always()
         run: go-junit-report < test-results.json > test-results.xml
