@@ -95,7 +95,6 @@ func (board *Game) MakeMove(move Move) {
 			}
 			board.Set(move.To, move.promotionTo|move.Piece.GetColor())
 		}
-
 	}
 	board.applyEnPassant(&move)
 
@@ -144,6 +143,14 @@ func (board *Game) MakeMove(move Move) {
 				enemyCastling.KingSide = false
 			}
 		}
+	}
+
+	pieces := &board.WhitePieces
+	if move.Piece.GetColor() == Black {
+		pieces = &board.BlackPieces
+	}
+
+	for i, piece := range *pieces {
 	}
 
 	board.Active = (^board.Active).GetColor()
@@ -261,7 +268,12 @@ type Game struct {
 	// The game's pieces, in [row][col]
 	// with the first row, first column being the bottom
 	// left of the board from white's perspective (i.e. a1)
-	Board *[8][8]Piece
+	Board       *[8][8]Piece
+	BlackPieces [16]*Coordinate
+	WhitePieces [16]*Coordinate
+
+	BlackPieceCount int
+	WhitePieceCount int
 
 	// Active player's turn
 	Active Piece
@@ -282,6 +294,45 @@ type Game struct {
 	WhiteCastleHistory []Castling
 	BlackCastleHistory []Castling
 	PreviousEnpassant  *Coordinate
+}
+
+func (board *Game) RefreshPieces() {
+	board.RefreshColorPieces(White)
+	board.RefreshColorPieces(Black)
+}
+
+func (board *Game) RefreshColorPieces(color Piece) {
+	pieceCount := &board.WhitePieceCount
+	pieces := &board.WhitePieces
+	if color == Black {
+		pieceCount = &board.BlackPieceCount
+		pieces = &board.BlackPieces
+	}
+
+	*pieceCount = 0
+
+	for row := range 8 {
+		for col := range 8 {
+			piece := board.Board[row][col]
+			if piece == 0 {
+				continue
+			}
+
+			if piece.GetColor() != color {
+				continue
+			}
+
+			coord := CreateCoordInt(row, col)
+			pieces[*pieceCount] = &coord
+			*pieceCount++
+
+			if *pieceCount >= 16 {
+				break
+			}
+		}
+	}
+
+	board.WhitePieceCount = 16
 }
 
 func (board Game) Equal(other Game) bool {
@@ -326,6 +377,7 @@ func FromFEN(str string) (*Game, error) {
 	}
 
 	result.Board = board
+	result.RefreshPieces()
 
 	switch records[1][0] {
 	case 'w':

@@ -162,6 +162,38 @@ func TestMakeMove(t *testing.T) {
 			})
 		})
 	})
+
+	t.Run("Piece Marking", func(t *testing.T) {
+		start := getStartGame()
+
+		e4 := start.CreateMoveStr("e2", "e4")
+
+		start.MakeMove(e4)
+
+		if start.WhitePieceCount != 16 {
+			t.Errorf("board failed to update white piece count, expected 16, got %d", start.WhitePieceCount)
+		}
+
+		founde4 := false
+		for _, coord := range start.WhitePieces {
+			if coord == nil {
+				continue
+			}
+
+			alg := coord.GetAlgebra()
+			if alg == "e2" {
+				t.Errorf("board failed to remove e2 from white pieces, got %v", start.WhitePieces)
+			}
+
+			if alg == "e4" {
+				founde4 = true
+			}
+		}
+
+		if !founde4 {
+			t.Errorf("board failed to add e4 to white pieces, got %v", start.WhitePieces)
+		}
+	})
 }
 
 func TestCreateMoveAlgebra(t *testing.T) {
@@ -593,6 +625,22 @@ func TestFromFEN(t *testing.T) {
 		}
 	})
 
+	t.Run("Piece Positions and Count", func(t *testing.T) {
+		start, err := FromFEN(START_POSITION)
+
+		if err != nil {
+			t.Error(err)
+		}
+
+		if start.WhitePieceCount != 16 {
+			t.Errorf("expected 16 white pieces, got %d", start.WhitePieceCount)
+		}
+
+		if start.BlackPieceCount != 16 {
+			t.Errorf("expected 16 black pieces, got %d", start.BlackPieceCount)
+		}
+	})
+
 	t.Run("Start Position - Black", func(t *testing.T) {
 		start := getStartBoard()
 		board, err := FromFEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")
@@ -681,7 +729,7 @@ func markRowColor(row *[8]Piece, color Piece) {
 }
 
 func getStartGame() Game {
-	return Game{
+	game := Game{
 		Board:         getStartBoard(),
 		Active:        White,
 		WhiteCastling: Castling{true, true},
@@ -690,4 +738,7 @@ func getStartGame() Game {
 		HalfMoves:     0,
 		FullMoves:     1,
 	}
+
+	game.RefreshPieces()
+	return game
 }
