@@ -14,13 +14,29 @@ func base() (Engine, io.Reader, io.Writer) {
 }
 
 func TestInit(t *testing.T) {
-	e, in, _ := base()
+	e, out, _ := base()
 
 	go e.Init()
 
-	expectLine(t, in, "id name GoChess2")
-	expectLine(t, in, "id author MS")
-	expectLine(t, in, "uciok")
+	expectLine(t, out, "id name GoChess2")
+	expectLine(t, out, "id author MS")
+	expectLine(t, out, "uciok")
+}
+
+func TestPrint(t *testing.T) {
+	e, out, _ := base()
+
+	go e.Print("Hello, World!")
+
+	expectLine(t, out, "Hello, World!")
+}
+
+func TestCopyProtection(t *testing.T) {
+	e, out, _ := base()
+
+	go e.CopyProtection()
+
+	expectLine(t, out, "copyprotection ok")
 }
 
 func expectLine(t *testing.T, in io.Reader, expected string) {
